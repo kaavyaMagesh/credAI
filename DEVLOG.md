@@ -33,3 +33,19 @@ Finalizing the technology stack required balancing rapid development speed again
 
 **Plan for tomorrow:**  
 Complete PRICING_DATA.md with normalized vendor pricing structures and begin implementing the deterministic audit-engine rules for plan-fit evaluation, savings calculations, and cross-tool recommendation logic.
+
+## Day 3 — 2026-05-22
+
+**Hours worked:** 8
+
+**What I did:**  
+Populated PRICING_DATA.md with normalized live pricing data for all 8 required AI tools plus extras (Windsurf and v0) matching the strict markdown syntax schema. Developed the dynamic pricing parser in `lib/pricing/parser.ts` to programmatically parse PRICING_DATA.md live at runtime, achieving complete traceability and eliminating database seeding for pricing. Implemented the core deterministic Audit Engine in `lib/audit/engine.ts` with plan-seat fit checking, same-vendor downgrades, cross-tool redundancies (Cursor/Copilot, ChatGPT/Claude), alternative tool recommendations, and the Credex bulk credit conversion flag. Developed a robust Vitest suite covering 7 unit tests for pricing parsing and audit engine logic. Documented testing commands and test cases in TESTS.md. Initialized local Git, made the initial commit containing all setup, parser, and engine assets, and pushed upstream to branch main on GitHub.
+
+**What I learned:**  
+Designing the engine to dynamically parse the markdown document itself creates an incredibly powerful single-source-of-truth. It programmatically links our user documentation with our product logic, ensuring zero discrepancies, avoiding the need for database pricing seed scripts, and allowing business-focused teams to easily maintain pricing catalogs by modifying markdown.
+
+**Blockers / what I'm stuck on:**  
+Handling edge cases in API token metrics and determining a realistic seat retention rate during redundancy checks (e.g. Claude + ChatGPT overlap) was difficult, but resolved by adopting a realistic 20% retention rate for floating ChatGPT accounts.
+
+**Plan for tomorrow:**  
+Designing database schema using supabase.
