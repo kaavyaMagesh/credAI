@@ -19,6 +19,10 @@ const config: Config = {
           700: "#15803d",
         }
       },
+      fontFamily: {
+        space: ["var(--font-space-grotesk)", "sans-serif"],
+        mono: ["var(--font-jetbrains-mono)", "monospace"],
+      },
     },
   },
   plugins: [],

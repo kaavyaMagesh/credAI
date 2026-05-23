@@ -134,14 +134,15 @@ export async function getLivePricing(): Promise<ParsedPricingRegistry> {
             const [, modelName, tokenType] = typeMatch;
             const cleanModel = modelName.trim();
             const cleanType = tokenType.trim() as ApiTokenPricing['inputType'];
+            const apiKey = currentHeaderName.replace(' Direct', '').trim();
             
-            if (!registry.apis[currentHeaderName][cleanModel]) {
-              registry.apis[currentHeaderName][cleanModel] = {} as any;
+            if (!registry.apis[apiKey][cleanModel]) {
+              registry.apis[apiKey][cleanModel] = {} as any;
             }
             
             const { numericPrice } = parseNumericPrice(rawPrice);
             
-            registry.apis[currentHeaderName][cleanModel][cleanType] = {
+            registry.apis[apiKey][cleanModel][cleanType] = {
               modelName: cleanModel,
               inputType: cleanType,
               pricePerMillion: numericPrice,

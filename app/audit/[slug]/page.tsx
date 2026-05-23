@@ -1,0 +1,431 @@
+import React from 'react';
+import Link from 'next/link';
+import { Metadata } from 'next';
+import { 
+  Coins, 
+  ChevronLeft, 
+  CheckCircle2, 
+  AlertTriangle, 
+  FileText, 
+  Sparkles,
+  Lock,
+  Activity,
+  Cpu,
+  Layers,
+  Sliders
+} from 'lucide-react';
+import { supabase } from '@/lib/db/supabase';
+import { Severity } from '@/lib/audit/engine';
+
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+// Tech corners widget for Fictional UI look
+const TechCorners = () => (
+  <>
+    <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-emerald-500/70 pointer-events-none" />
+    <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-emerald-500/70 pointer-events-none" />
+    <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-emerald-500/70 pointer-events-none" />
+    <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-emerald-500/70 pointer-events-none" />
+  </>
+);
+
+// 1. Dynamic Open Graph & SEO Metadata Setup (Next.js 15 standard)
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  
+  let savingsAmount = 0;
+  let isDemo = slug === 'mock-demo-slug';
+
+  if (isDemo) {
+    savingsAmount = 2280; // $190/mo * 12
+  } else {
+    try {
+      const { data } = await supabase
+        .from('audits')
+        .select('results_payload')
+        .eq('id', slug)
+        .single();
+        
+      if (data?.results_payload) {
+        savingsAmount = (data.results_payload as any).annualSavings || 0;
+      }
+    } catch (e) {
+      console.error('Metadata generation failed to fetch audit:', e);
+    }
+  }
+
+  const title = `AI Stack Audit Report — Save $${savingsAmount.toLocaleString()}/year`;
+  const description = `This public shared AI stack audit identifies up to $${savingsAmount.toLocaleString()}/year in recurring software optimization savings. View the detailed report here.`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/audit/${slug}`,
+      siteName: 'credAI Stack Auditor',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+    }
+  };
+}
+
+// Helper mock for offline/demo visits
+const DEMO_AUDIT_RESULT = {
+  team_size: 10,
+  use_case: 'coding',
+  results_payload: {
+    totalCurrentSpend: 390,
+    totalOptimizedSpend: 200,
+    monthlySavings: 190,
+    annualSavings: 2280,
+    overallSeverity: 'medium' as Severity,
+    showCredexBanner: false,
+    results: [
+      {
+        toolId: 'cursor',
+        toolName: 'Cursor',
+        currentPlanName: 'Pro',
+        currentSpend: 200,
+        optimizedSpend: 200,
+        savings: 0,
+        annualSavings: 0,
+        severity: 'optimal' as Severity,
+        recommendationType: 'optimal',
+        recommendation: 'Your active Cursor subscription matches your team size and coding workloads optimally. No modifications needed.',
+        confidence: 0.95
+      },
+      {
+        toolId: 'copilot',
+        toolName: 'GitHub Copilot',
+        currentPlanName: 'Business',
+        currentSpend: 190,
+        optimizedSpend: 0,
+        savings: 190,
+        annualSavings: 2280,
+        severity: 'medium' as Severity,
+        recommendationType: 'consolidate',
+        recommendation: 'Redundancy Alert: Your engineers are utilizing both Cursor and Copilot. Cursor includes a native built-in editor Copilot, making separate GitHub Copilot seats unnecessary.',
+        confidence: 0.96,
+        capabilityGap: ['GitHub Copilot CLI integration outside the editor']
+      }
+    ]
+  }
+};
+
+// 2. Dynamic Server-side Rendered Shared Page
+export default async function SharedAuditPage({ params }: PageProps) {
+  const { slug } = await params;
+  
+  let auditData: any = null;
+  let isDemo = slug === 'mock-demo-slug';
+  let errorState = false;
+
+  if (isDemo) {
+    auditData = DEMO_AUDIT_RESULT;
+  } else {
+    try {
+      // Security measure: strictly fetch team_size, use_case, results_payload
+      const { data, error } = await supabase
+        .from('audits')
+        .select('team_size, use_case, results_payload')
+        .eq('id', slug)
+        .single();
+
+      if (error || !data) {
+        console.error(`Dynamic shared fetch failed for slug ${slug}:`, error);
+        errorState = true;
+      } else {
+        auditData = data;
+      }
+    } catch (e) {
+      console.error('Fetch error:', e);
+      errorState = true;
+    }
+  }
+
+  if (errorState || !auditData) {
+    return (
+      <main className="min-h-screen bg-[#020617] text-[#f8fafc] flex flex-col items-center justify-center p-4 font-mono">
+        <div className="max-w-md w-full bg-slate-950/40 border border-slate-800 rounded-none p-8 text-center space-y-4 shadow-2xl relative">
+          <TechCorners />
+          <AlertTriangle className="w-10 h-10 text-red-400 mx-auto" />
+          <h2 className="text-sm font-bold text-white uppercase tracking-widest">Report Not Resolved</h2>
+          <p className="text-xs text-slate-400 font-sans leading-relaxed">
+            The dynamic audit slug is invalid or database connections are offline. Create a new audit stack in seconds from our compiler canvas.
+          </p>
+          <Link 
+            href="/"
+            className="inline-block bg-emerald-500 hover:bg-emerald-600 text-[#020617] font-bold uppercase tracking-wider text-[10px] px-6 py-2.5 rounded-none transition-colors shadow-md"
+          >
+            Compiler Canvas
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  const results = auditData.results_payload;
+  const toolResults = results.results || [];
+
+  return (
+    <main className="min-h-screen bg-[#020617] text-[#f8fafc] flex flex-col items-center py-10 px-4 sm:px-6 lg:px-8 font-space">
+      <div className="w-full max-w-4xl flex-grow flex flex-col">
+        
+        {/* Utilitarian FUI Telemetry Header */}
+        <div className="w-full flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 px-4 py-3 bg-slate-950/20 border border-slate-800 text-[10px] font-mono text-slate-500 uppercase tracking-widest relative mb-6">
+          <div className="absolute top-0 left-0 w-1.5 h-1.5 bg-emerald-500/70" />
+          <div className="absolute top-0 right-0 w-1.5 h-1.5 bg-emerald-500/70" />
+          <div className="absolute bottom-0 left-0 w-1.5 h-1.5 bg-emerald-500/70" />
+          <div className="absolute bottom-0 right-0 w-1.5 h-1.5 bg-emerald-500/70" />
+          <div className="flex items-center gap-3">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span>SYS_REF: CRD-SHARED // ACCESS: PUBLIC_DELEGATED</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <span>PII_STATE: SCRUBBED // SECURITY: SAFE</span>
+            <span className="text-slate-700 font-normal">|||| | || ||| |</span>
+          </div>
+        </div>
+
+        {/* Header Title block */}
+        <div className="flex items-center justify-between mb-8 pb-6 border-b border-slate-800">
+          <Link href="/" className="flex items-center gap-2.5 hover:opacity-90 transition-opacity text-left">
+            <div className="p-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-none">
+              <Coins className="w-5 h-5" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent font-mono uppercase tracking-tight">credAI Stack Auditor</h1>
+              <p className="text-[10px] text-slate-400 font-sans">Utilitarian cost auditing & redundant seed assessment.</p>
+            </div>
+          </Link>
+
+          <Link
+            href="/"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider text-slate-400 hover:text-emerald-400 transition-colors border border-slate-800 hover:border-emerald-500/20 bg-slate-900/40 rounded-none"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+            Run New Audit
+          </Link>
+        </div>
+
+        {/* Security / PII Stripped Banner */}
+        <div className="mb-6 py-2.5 px-4 bg-slate-950/60 border border-slate-800 text-[10px] font-mono flex items-center justify-between gap-3 text-left relative">
+          <div className="absolute top-0 left-0 w-1 h-1 bg-emerald-500" />
+          <div className="flex items-center gap-2 text-slate-450">
+            <Lock className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="font-bold uppercase tracking-widest text-slate-300">PUBLIC DELEGATION VIEW</span>
+          </div>
+          <span className="text-[9px] text-slate-500 font-sans font-medium">
+            Personal identities (emails, companies) are strictly omitted from this client payload.
+          </span>
+        </div>
+
+        {/* Utilitarian Brutalist Container */}
+        <div className="bg-slate-950/20 border border-slate-800 rounded-none p-6 sm:p-8 relative shadow-2xl flex-grow space-y-8">
+          
+          <TechCorners />
+
+          {/* UTILITY HERO STAT PANEL */}
+          <div className="bg-slate-950/60 border border-slate-800 rounded-none p-6 sm:p-8 flex flex-col md:flex-row gap-6 items-center justify-between relative overflow-hidden shadow-lg text-left">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none" />
+            
+            <div className="space-y-3 font-mono">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="px-2 py-0.5 text-[8px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 rounded-none tracking-widest uppercase select-none">
+                  OPTIMIZATION REPORT
+                </span>
+                <span className={`px-2 py-0.5 text-[8px] font-bold rounded-none border uppercase tracking-widest select-none ${
+                  results.overallSeverity === 'high'
+                    ? 'bg-red-500/10 text-red-400 border-red-500/30'
+                    : results.overallSeverity === 'medium'
+                    ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                    : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                }`}>
+                  LVL: {results.overallSeverity}
+                </span>
+              </div>
+
+              <h2 className="text-xl font-bold text-white uppercase tracking-wider font-mono">
+                AI Stack Performance
+              </h2>
+              <p className="text-[11px] text-slate-400 font-sans">
+                Computed metrics for a workspace of <span className="font-semibold text-slate-200 font-mono">{auditData.team_size}</span> seats on a <span className="font-semibold text-slate-200 font-mono uppercase text-[10px] tracking-wider">{auditData.use_case}</span> workload.
+              </p>
+            </div>
+
+            <div className="flex gap-4 shrink-0 font-mono w-full sm:w-auto pt-4 md:pt-0">
+              <div className="text-center bg-slate-950 border border-slate-850 p-4 rounded-none shrink-0 w-28 sm:w-32">
+                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Monthly savings</p>
+                <p className="text-xl sm:text-2xl font-bold text-emerald-400 mt-1">${results.monthlySavings}</p>
+              </div>
+
+              <div className="text-center bg-emerald-500 text-[#020617] border border-emerald-400 p-4 rounded-none shrink-0 w-28 sm:w-32 shadow-lg shadow-emerald-500/5">
+                <p className="text-[9px] font-extrabold uppercase tracking-widest">Annual savings</p>
+                <p className="text-xl sm:text-2xl font-black mt-1">${results.annualSavings}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Zero State Optimized */}
+          {results.zeroStateMessage && (
+            <div className="p-6 bg-emerald-950/5 border border-emerald-500/20 rounded-none text-center space-y-2 font-mono relative">
+              <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
+              <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
+              <h3 className="text-xs font-bold text-white uppercase tracking-widest">Optimization level optimal</h3>
+              <p className="text-[10px] text-slate-450 max-w-lg mx-auto font-sans leading-relaxed">{results.zeroStateMessage}</p>
+            </div>
+          )}
+
+          {/* Honest Low Savings State */}
+          {results.monthlySavings <= 50 && results.monthlySavings > 0 && (
+            <div className="p-5 bg-blue-950/5 border border-blue-500/20 rounded-none text-left space-y-2 flex gap-4 items-start font-mono">
+              <div className="p-2 bg-blue-500/10 rounded-none text-blue-400 select-none shrink-0 border border-blue-500/10">
+                <FileText className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-white uppercase tracking-widest">Stack is highly optimized</h4>
+                <p className="text-[10px] text-slate-450 leading-relaxed mt-0.5 font-sans">
+                  The calculations generated minor savings of only ${results.monthlySavings}/mo. We do not advise modifying workspace accounts or disrupting team workflows for negligible financial differences. Keep this setup intact!
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* CREDEX CONDITIONAL BANNER - Displays strictly if savings > $500 */}
+          {results.monthlySavings > 500 && (
+            <div className="bg-emerald-950/5 border border-emerald-500/30 rounded-none p-5 flex flex-col sm:flex-row gap-4 items-center justify-between text-left font-mono relative">
+              <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
+              <div className="flex gap-3 items-center">
+                <div className="p-2.5 bg-emerald-500/10 rounded-none border border-emerald-500/30 text-emerald-400 shrink-0 select-none">
+                  <Coins className="w-4 h-4" />
+                </div>
+                <div className="space-y-0.5">
+                  <h4 className="text-xs font-bold text-white uppercase tracking-widest">Credex bulk integration conversion</h4>
+                  <p className="text-[10px] text-slate-450 font-sans leading-relaxed">
+                    Centralizing active seat registers qualifies your team for up to 30% reduction via bulk enterprise licenses.
+                  </p>
+                </div>
+              </div>
+              <Link
+                href="/"
+                className="bg-emerald-500 hover:bg-emerald-600 text-[#020617] border border-emerald-400 font-mono font-bold uppercase tracking-wider text-[10px] px-4 py-2 rounded-none shadow-md shrink-0 transition-all text-center"
+              >
+                Acquire Credits
+              </Link>
+            </div>
+          )}
+
+          {/* Breakdowns strict list */}
+          <div className="space-y-4 font-mono">
+            <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-800 pb-2 text-left">
+              Tool-Specific Analysis Insights
+            </h3>
+            
+            <div className="space-y-4">
+              {toolResults.map((result: any) => {
+                const isOptimal = result.severity === 'optimal' || result.savings === 0;
+                return (
+                  <div 
+                    key={result.toolId} 
+                    className={`border rounded-none p-5 space-y-4 text-left transition-all relative ${
+                      isOptimal 
+                        ? 'border-slate-850 bg-slate-950/5' 
+                        : result.severity === 'high' 
+                        ? 'border-red-500/20 bg-red-950/5'
+                        : 'border-amber-500/20 bg-amber-950/5'
+                    }`}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-850/80 pb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-white uppercase tracking-wider">{result.toolName}</span>
+                        <span className="text-[9px] text-slate-500">[{result.currentPlanName}]</span>
+                      </div>
+
+                      <div className="flex items-center gap-2.5">
+                        <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-none uppercase tracking-widest border ${
+                          isOptimal
+                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                            : result.severity === 'high'
+                            ? 'bg-red-500/10 text-red-400 border-red-500/20'
+                            : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                        }`}>
+                          {isOptimal ? 'OPTIMAL' : 'REDUN_ALERT'}
+                        </span>
+                        
+                        <span className="text-[9px] text-slate-400 font-semibold bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-none select-none">
+                          CONF: {Math.round(result.confidence * 100)}%
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                      <div className="space-y-1 text-[10px] font-medium text-slate-550 text-left">
+                        <div className="flex justify-between">
+                          <span>Current:</span>
+                          <span className="font-semibold text-slate-200">${result.currentSpend}/mo</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Optimized:</span>
+                          <span className="font-semibold text-emerald-400">${result.optimizedSpend}/mo</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Savings:</span>
+                          <span className="font-semibold text-emerald-400">${result.savings}/mo</span>
+                        </div>
+                      </div>
+
+                      <div className="md:col-span-2 p-3 bg-slate-950/60 border border-slate-850 rounded-none text-[11px] text-slate-350 leading-relaxed font-sans text-left">
+                        {result.recommendation}
+                      </div>
+                    </div>
+
+                    {(result.creditFlag || (result.capabilityGap && result.capabilityGap.length > 0)) && (
+                      <div className="p-3 bg-slate-950 border border-slate-850 rounded-none space-y-2 text-[10px] font-mono leading-relaxed text-left">
+                        {result.creditFlag && (
+                          <div className="flex gap-2 items-start">
+                            <Coins className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                            <p className="text-slate-400 font-medium">{result.creditMessage}</p>
+                          </div>
+                        )}
+
+                        {result.capabilityGap && result.capabilityGap.length > 0 && (
+                          <div className="flex gap-2 items-start">
+                            <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
+                            <div className="text-slate-400">
+                              <span className="font-bold text-slate-300">POTENTIAL CAPABILITY GAPS: </span>
+                              {result.capabilityGap.join(', ')}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Action Link Panel */}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center pt-6 border-t border-slate-800 font-mono">
+            <Link
+              href="/"
+              className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-[#020617] border border-emerald-400 font-mono font-bold uppercase tracking-wider text-[11px] px-6 py-2.5 rounded-none shadow-md shadow-emerald-500/5 transition-all"
+            >
+              <Sparkles className="w-4 h-4 animate-pulse" />
+              Build Your Own Audit Report
+            </Link>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  );
+}
