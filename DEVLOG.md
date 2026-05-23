@@ -49,3 +49,21 @@ Handling edge cases in API token metrics and determining a realistic seat retent
 
 **Plan for tomorrow:**  
 Designing database schema using supabase.
+
+## Day 4 — 2026-05-23
+
+**Hours worked:** 8
+
+**What I did:**  
+Designed and implemented the core database schema DDL migrations for `audits` and `leads` tables in Supabase, saved under `lib/db/schema.sql`. Created the Supabase client singleton in `lib/db/supabase.ts`. Developed robust server-side POST and GET API endpoints under `app/api/audit/save/route.ts` and `app/api/audit/fetch/route.ts` to execute computations and securely log audit records and marketing leads. Fully redesigned the main wizard (`app/page.tsx`) and dynamic shared public report pages (`app/audit/[slug]/page.tsx`) using the FUI (Fictional User Interface) / Industrial Brutalism Lite design system—replacing modern SaaS rounded cards with 1px grid divider lines, absolute corner brackets, high-contrast cyber volt-green highlights, and compact monospace layouts. Wired the multi-step form to database APIs to dynamically generate real UUID shared slugs and copy paths to the clipboard. Configured dynamic Open Graph metadata for rich social link previews.
+
+**What I learned:**  
+Next.js 15 dynamic routing parameters are compiled as Promises on the server side, which requires async promise wrapping when rendering dynamically fetched data. Additionally, decoupling standard browser pages from Node.js dependencies prevents silent loading crashes.
+
+**Blockers / what I'm stuck on:**  
+1. **Window Reference Hydration Crash**: Encountered an issue where referencing `window.location.origin` inside the Client Component JSX threw a server-side ReferenceError during pre-compilation, crashing client-side React hydration and leaving all buttons unwired. Fixed it by storing the origin in state and populating it after mounting.
+2. **Node.js / Next.js Import Conflict**: Importing types directly from the server-side engine caused Webpack to compile Node built-ins (`fs`/`path`) for the browser, crashing execution. Solved this by removing the backend engine import and declaring types locally.
+3. **Tailwind CSS Compilation**: Tailwind styling was initially uncompiled because standard Next.js loaders failed to recognize `.mjs` extensions for PostCSS configurations. Resolved it by creating a standard CommonJS `postcss.config.js` and purging the compilation cache `.next`.
+
+**Plan for tomorrow:**  
+Integrate AI workflow pipelines (Anthropic API) for personalized text-summarization recommendations, and continue expanding testing suites.
