@@ -28,6 +28,7 @@ export async function GET(request: Request) {
             annualSavings: 2280,
             overallSeverity: 'medium',
             showCredexBanner: false,
+            aiSummary: "Redundancy identified: GitHub Copilot and Cursor licenses are overlapping, creating a high-density compute duplication. Consolidating the engineering team solely onto Cursor licenses is recommended. This optimization path recovers $190/mo ($2,280 annualized) with zero loss of editor functionality.",
             results: [
               {
                 toolId: 'cursor',

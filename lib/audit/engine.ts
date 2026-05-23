@@ -60,6 +60,7 @@ export interface AggregateAudit {
   showCredexBanner: boolean;
   zeroStateMessage?: string;
   results: AuditResult[];
+  aiSummary?: string;
 }
 
 /**

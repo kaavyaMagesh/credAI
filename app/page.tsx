@@ -1001,6 +1001,29 @@ export default function Home() {
                 </div>
               </div>
 
+              {/* METRIC_SYNTHESIS_REPORT // COGNITIVE_ANALYSIS */}
+              {auditResult.aiSummary && (
+                <div className="border border-emerald-500/30 bg-emerald-950/5 p-6 rounded-none font-mono text-left relative">
+                  <div className="absolute top-0 left-0 w-1.5 h-1.5 bg-emerald-500" />
+                  <div className="absolute top-0 right-0 w-1.5 h-1.5 bg-emerald-500" />
+                  <div className="absolute bottom-0 left-0 w-1.5 h-1.5 bg-emerald-500" />
+                  <div className="absolute bottom-0 right-0 w-1.5 h-1.5 bg-emerald-500" />
+                  
+                  <div className="flex justify-between items-center mb-3 pb-2 border-b border-slate-800">
+                    <span className="text-[10px] font-bold text-emerald-400 tracking-widest flex items-center gap-2">
+                      <span className="inline-block w-2 h-2 bg-emerald-500 animate-pulse shrink-0" />
+                      [ METRIC_SYNTHESIS_REPORT // COGNITIVE_ANALYSIS ]
+                    </span>
+                    <span className="text-[8px] text-slate-500">ENGINE: GEMINI_2.5_FLASH</span>
+                  </div>
+                  
+                  <div className="text-xs text-slate-350 leading-relaxed font-mono">
+                    <p className="inline">{auditResult.aiSummary}</p>
+                    <span className="inline-block w-1.5 h-3.5 bg-emerald-400 ml-1.5 align-middle animate-pulse" />
+                  </div>
+                </div>
+              )}
+
               {/* Dynamic Shareable Link Card */}
               {savedSlug && (
                 <div className="bg-slate-950/40 border border-slate-800 p-5 rounded-none flex flex-col sm:flex-row gap-4 items-center justify-between text-left font-mono">

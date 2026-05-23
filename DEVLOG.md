@@ -67,3 +67,20 @@ Next.js 15 dynamic routing parameters are compiled as Promises on the server sid
 
 **Plan for tomorrow:**  
 Integrate AI workflow pipelines (Anthropic API) for personalized text-summarization recommendations, and continue expanding testing suites.
+
+## Day 5 — 2026-05-24
+
+**Hours worked:** 6
+
+**What I did:**  
+Integrated the Gemini LLM dynamic text pipeline to generate ~100-word personalized stack summaries directly inside the audit results payload. Documented the full prompt engineering structure, model criteria (Gemini 2.5 Flash), and reasoning in `PROMPTS.md`. Modified the server-side save route (`app/api/audit/save/route.ts`) to query the Gemini REST API directly using fetch and inject the result under `calculatedResult.aiSummary`. Implemented a robust mathematical fallback template text compiler (`generateFallbackSummary`) to guarantee 100% service uptime even if the API key is missing or calls fail. Styled the front-end components on both Step 4 of the wizard (`app/page.tsx`) and the dynamic shared public report pages (`app/audit/[slug]/page.tsx`) with a premium FUI bracketed box labeled `[ METRIC_SYNTHESIS_REPORT // COGNITIVE_ANALYSIS ]` complete with pulsing cyber-lime carets. Wrote comprehensive Vitest unit tests in `tests/ai.test.ts` to test the fallback compiler under different savings conditions.
+
+**What I learned:**  
+Designing AI pipelines with deterministic, grammatically sound mathematical fallback templates is a bulletproof way to build high-availability products. It ensures that the application never breaks or shows empty space even if API limits or billing limits are reached. I also learned that path aliases inside backend files need careful relative routing if they are to be executed directly by external test runners like Vitest.
+
+**Blockers / what I'm stuck on:**  
+1. **Vitest Path-Alias Resolution**: Running Vitest on the save route triggered compilation errors due to tsconfig `@/` path aliases not being recognized by standard Node.js test contexts. Solved it completely by shifting the API route imports to use relative paths.
+2. **Supabase Client Initialization Crash**: Importing the API route inside test scripts triggered fatal Supabase constructor exceptions because the database environment variables are not loaded in Vitest. Resolved this cleanly by configuring `lib/db/supabase.ts` to default to placeholder URLs/keys during empty environment imports, which keeps imports compile-safe while fully preserving dynamic database connections in development and production.
+
+**Plan for tomorrow:**  
+Continue refinement of Open Graph assets, proceed with final validation checks, compile technical reports, and polish documentation.
