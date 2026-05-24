@@ -21,9 +21,13 @@ CREATE TABLE IF NOT EXISTS public.leads (
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     email VARCHAR(255) NOT NULL,
     company_name VARCHAR(255),
+    role VARCHAR(255),
     team_size INTEGER NOT NULL,
     audit_id UUID REFERENCES public.audits(id) ON DELETE SET NULL
 );
+
+-- Migration support for existing tables:
+ALTER TABLE public.leads ADD COLUMN IF NOT EXISTS role VARCHAR(255);
 
 -- Indexing for fast dynamic fetches and analytical views
 CREATE INDEX IF NOT EXISTS idx_audits_created_at ON public.audits(created_at DESC);

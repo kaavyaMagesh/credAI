@@ -27,7 +27,7 @@ export interface ApiTokenPricing {
 
 export interface ParsedPricingRegistry {
   tools: Record<string, ToolPricing>;
-  apis: Record<string, Record<string, ApiTokenPricing>>; // apiName -> modelName -> type -> pricing
+  apis: Record<string, Record<string, Record<string, ApiTokenPricing>>>; // apiName -> modelName -> type -> pricing
 }
 
 // Memory cache to avoid repeated file reads in production, while keeping it live (1-minute TTL for safety)

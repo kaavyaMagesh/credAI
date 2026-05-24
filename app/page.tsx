@@ -67,6 +67,7 @@ interface AggregateAudit {
   overallSeverity: Severity;
   showCredexBanner: boolean;
   zeroStateMessage?: string;
+  aiSummary?: string;
   results: AuditResult[];
 }
 
@@ -258,6 +259,8 @@ export default function Home() {
   // Lead capture state
   const [email, setEmail] = useState<string>('');
   const [companyName, setCompanyName] = useState<string>('');
+  const [role, setRole] = useState<string>('');
+  const [honeypot, setHoneypot] = useState<string>('');
   const [showLeadCapture, setShowLeadCapture] = useState<boolean>(false);
 
   // Audit Results & slug
@@ -285,6 +288,7 @@ export default function Home() {
         if (parsed.requiresSSO !== undefined) setRequiresSSO(parsed.requiresSSO);
         if (parsed.email) setEmail(parsed.email);
         if (parsed.companyName) setCompanyName(parsed.companyName);
+        if (parsed.role) setRole(parsed.role);
         if (parsed.step) setStep(parsed.step);
         if (parsed.auditResult) setAuditResult(parsed.auditResult);
         if (parsed.savedSlug) setSavedSlug(parsed.savedSlug);
@@ -308,6 +312,7 @@ export default function Home() {
         requiresSSO,
         email,
         companyName,
+        role,
         step,
         auditResult,
         savedSlug
@@ -316,7 +321,7 @@ export default function Home() {
     } catch (e) {
       console.error('Failed to save state to localStorage:', e);
     }
-  }, [teamSize, useCase, selectedTools, toolConfigs, hasComplianceNeeds, requiresHIPAA, requiresSSO, email, companyName, step, auditResult, savedSlug, isMounted]);
+  }, [teamSize, useCase, selectedTools, toolConfigs, hasComplianceNeeds, requiresHIPAA, requiresSSO, email, companyName, role, step, auditResult, savedSlug, isMounted]);
 
   const handleReset = () => {
     localStorage.removeItem(LOCAL_STORAGE_KEY);
@@ -330,6 +335,8 @@ export default function Home() {
     setRequiresSSO(false);
     setEmail('');
     setCompanyName('');
+    setRole('');
+    setHoneypot('');
     setShowLeadCapture(false);
     setAuditResult(null);
     setSavedSlug(null);
@@ -422,6 +429,8 @@ export default function Home() {
         })),
         email,
         companyName,
+        role,
+        website: honeypot,
         hasComplianceNeeds,
         requiresHIPAA,
         requiresSSO
@@ -436,7 +445,8 @@ export default function Home() {
       });
 
       if (!response.ok) {
-        throw new Error('Server calculations failed.');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Server calculations failed.');
       }
 
       const resData = await response.json();
@@ -910,7 +920,7 @@ export default function Home() {
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                      <label htmlFor="lead-company" className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Company / Org Name</label>
+                      <label htmlFor="lead-company" className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Company / Org Name (Optional)</label>
                       <input
                         id="lead-company"
                         type="text"
@@ -918,6 +928,33 @@ export default function Home() {
                         value={companyName}
                         onChange={(e) => setCompanyName(e.target.value)}
                         className="bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-none px-4 py-2.5 text-xs text-white outline-none w-full font-mono"
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label htmlFor="lead-role" className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Job Title / Role (Optional)</label>
+                      <input
+                        id="lead-role"
+                        type="text"
+                        placeholder="CTO / Head of Engineering"
+                        value={role}
+                        onChange={(e) => setRole(e.target.value)}
+                        className="bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-none px-4 py-2.5 text-xs text-white outline-none w-full font-mono"
+                      />
+                    </div>
+
+                    {/* Honeypot field - invisible to humans, auto-filled by bots */}
+                    <div className="hidden" style={{ display: 'none' }}>
+                      <label htmlFor="lead-website" className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Website</label>
+                      <input
+                        id="lead-website"
+                        type="text"
+                        name="website"
+                        tabIndex={-1}
+                        autoComplete="off"
+                        value={honeypot}
+                        onChange={(e) => setHoneypot(e.target.value)}
+                        className="bg-slate-950 border border-slate-800 rounded-none px-4 py-2.5 text-xs text-white outline-none w-full font-mono"
                       />
                     </div>
                   </div>

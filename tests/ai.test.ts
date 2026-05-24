@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateFallbackSummary } from '../app/api/audit/save/route';
+import { generateFallbackSummary } from '../lib/audit/fallback';
 
 describe('AI Fallback Text Generator', () => {
   it('should generate an appropriate optimized summary for zero savings', () => {
