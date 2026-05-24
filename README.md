@@ -24,9 +24,9 @@ During the sprint build, we made five critical technical trade-offs to balance r
 *   **The Decision:** We designed a server-side, in-memory `Map` tracking request timestamps rather than provisioning Upstash Redis or Vercel KV.
 *   **The Rationale:** For a rapid prototype, this avoided external network latency overhead and DevOps configuration during the sprint. We accepted the serverless edge-case limit of rate-limiting per-instance to favor ultra-fast local development and instant offline unit testing.
 
-### 5. Graceful Mathematical Fallback Compilers vs. Hard Block on LLM Failures
-*   **The Decision:** We wrote a custom template compiler (`generateFallbackSummary` in `lib/audit/fallback.ts`) to mathematically compile stack summaries if the Gemini REST API calls fail or the API key is missing.
-*   **The Rationale:** Guaranteeing 100% service availability is a premium requirement. Startups must never see broken cards, loading spinners, or empty spaces if API quotas or billing limits are reached; this ensures the product remains completely operational and mathematically accurate under all circumstances.
+### 5. Decoupled Frontend Type Interfaces vs. Shared Backend Import Types
+*   **The Decision:** We declared isolated frontend-specific type interfaces inside `app/page.tsx` and client files instead of sharing and importing them directly from the server-side calculations module `lib/audit/engine.ts`.
+*   **The Rationale:** Direct server imports in Client Components caused Next.js's bundler to attempt compiling server-side Node.js built-ins (`fs` and `path`) for the browser environment, throwing fatal Webpack reference compilation errors. By declaring isolated, decoupled type interfaces for the client view model, we eliminated Webpack browser bundling conflicts, keeping the client bundle compile-safe, lightweight, and completely decoupled from backend modules.
 
 ---
 
