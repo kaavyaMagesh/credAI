@@ -14,6 +14,9 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    - name: Debug Workspace Files
+      run: ls -la
+
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
