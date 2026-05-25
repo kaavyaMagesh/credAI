@@ -273,6 +273,9 @@ function HomeContent() {
   const [savedSlug, setSavedSlug] = useState<string | null>(null);
   const [copied, setCopied] = useState<boolean>(false);
   const [origin, setOrigin] = useState<string>('http://localhost:3000');
+  const [feedbackText, setFeedbackText] = useState<string>('');
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState<boolean>(false);
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState<boolean>(false);
 
   // 1. Hydration
   useEffect(() => {
@@ -346,6 +349,39 @@ function HomeContent() {
     setAuditResult(null);
     setSavedSlug(null);
     setError(null);
+    setFeedbackText('');
+    setFeedbackSubmitting(false);
+    setFeedbackSubmitted(false);
+  };
+
+  const handleFeedbackSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!feedbackText.trim()) return;
+
+    setFeedbackSubmitting(true);
+    try {
+      const response = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          slug: savedSlug,
+          feedback: feedbackText,
+          email: email || null
+        })
+      });
+
+      if (response.ok) {
+        setFeedbackSubmitted(true);
+      } else {
+        console.error('Failed to submit feedback');
+      }
+    } catch (err) {
+      console.error('Error submitting feedback:', err);
+    } finally {
+      setFeedbackSubmitting(false);
+    }
   };
 
   const handleToggleTool = (toolId: string) => {
@@ -1311,6 +1347,48 @@ function HomeContent() {
                     );
                   })}
                 </div>
+              </div>
+
+              {/* FEEDBACK & INTEGRATION REQUESTS PANEL */}
+              <div className="bg-slate-950/40 border border-slate-850 p-6 rounded-none text-left font-mono relative space-y-4 print:hidden">
+                <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
+                <div className="flex justify-between items-center border-b border-slate-850/80 pb-2.5">
+                  <span className="text-[10px] font-bold text-emerald-400 tracking-widest flex items-center gap-2">
+                    <FileText className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    [ FEEDBACK_ & _TOOL_REQUESTS ]
+                  </span>
+                  <span className="text-[8px] text-slate-500">FEEDBACK_TELEMETRY</span>
+                </div>
+                
+                <p className="text-[11px] text-slate-350 leading-relaxed font-sans">
+                  Are your primary developer tools or services missing from our compiler? Suggest what we should integrate next or share your general feedback.
+                </p>
+
+                {feedbackSubmitted ? (
+                  <div className="p-4 bg-emerald-950/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono rounded-none">
+                    [ REQUEST_LOGGED // THANK_YOU ]: Your feedback has been logged directly inside your audit record telemetry. We will review it shortly.
+                  </div>
+                ) : (
+                  <form onSubmit={handleFeedbackSubmit} className="space-y-3">
+                    <textarea
+                      required
+                      rows={3}
+                      value={feedbackText}
+                      onChange={(e) => setFeedbackText(e.target.value)}
+                      placeholder="e.g. Windsurf Teams, v0 Business, Cursor Enterprise limits, custom OpenAI tokens..."
+                      className="bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-none p-3 text-[11px] text-white outline-none w-full font-mono resize-none"
+                    />
+                    <div className="flex justify-end">
+                      <button
+                        type="submit"
+                        disabled={feedbackSubmitting || !feedbackText.trim()}
+                        className="bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-850 disabled:text-slate-650 text-[#020617] font-mono font-bold uppercase tracking-wider text-[10px] px-4 py-2 rounded-none shadow-md transition-all cursor-pointer"
+                      >
+                        {feedbackSubmitting ? 'Logging...' : 'Submit Request'}
+                      </button>
+                    </div>
+                  </form>
+                )}
               </div>
 
               {/* Reset navigation */}
