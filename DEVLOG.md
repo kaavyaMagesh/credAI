@@ -83,4 +83,24 @@ Designing AI pipelines with deterministic, grammatically sound mathematical fall
 2. **Supabase Client Initialization Crash**: Importing the API route inside test scripts triggered fatal Supabase constructor exceptions because the database environment variables are not loaded in Vitest. Resolved this cleanly by configuring `lib/db/supabase.ts` to default to placeholder URLs/keys during empty environment imports, which keeps imports compile-safe while fully preserving dynamic database connections in development and production.
 
 **Plan for tomorrow:**  
-Continue refinement of Open Graph assets, proceed with final validation checks, compile technical reports, and polish documentation.
+Complete the bonus integrations (PDF, embed parametrics, peer budgets, referrals) and resolve the ESLint build blockers.
+
+## Day 6 — 2026-05-25
+
+**Hours worked:** 8
+
+**What I did:**  
+Successfully implemented and integrated all five B2B bonus deliverables directly into the primary wizard experience under `app/page.tsx`. Positioned the client-side `ExportPdfButton` alongside the wizard's navigation steps for unified local report printing. Programmed a responsive, highly optimized embed viewport toggle (`isEmbed`) using Next.js 15 `useSearchParams` query parsing, automatically stripping decorative telemetry headers and site containers for iframe integrations. Wired the quantitative peer benchmarking budget panel and the copy-to-clipboard referral acquisition discount card (`[Slug]-CRD`) on the Step 4 results view.
+Created a server-side feedback logging endpoint (`app/api/feedback/route.ts`) that asynchronously captures custom tool suggestions and securely appends them to the `results_payload` JSONB column in Supabase without requiring database alterations.
+Resolved a critical build-blocking lint error caused by unescaped single quotes in the shared audit JSX, stabilizing `npm run lint` and enabling successful green checks on the GitHub Actions CI workflow runner.
+
+**What I learned:**  
+Next.js client-side search parameter parsing using `useSearchParams` must be encapsulated inside a `<Suspense>` boundary during static page pre-compilation to prevent deoptimization build warnings. Additionally, storing feedback as metadata within a JSONB column is a highly elegant, migration-safe strategy for lightweight server logging.
+
+**Blockers / what I'm stuck on:**  
+1. **Supabase RLS UPDATE Block**: Anonymous client-side attempts to submit feedback failed due to RLS security boundaries on the `audits` table. Solved this by designing and adding the `Allow anonymous updates on audits` UPDATE rule to `lib/db/schema.sql` and executing it in the Supabase console.
+2. **Resend Sandbox Constraints**: Under standard free developer sandbox keys, Resend restricts outbound transactional emails exclusively to the account holder's registered address, which might prevent reviewers from seeing delivery. Solved this by publishing a clear "Third-Party Sandbox Verification Guide" inside `TESTS.md` explaining credentials handling.
+
+**Plan for tomorrow:**  
+Finalize live public Vercel deployment, verify dynamic UUID routing in production, complete manual mobile Lighthouse audits, and submit all internship deliverables.
+
