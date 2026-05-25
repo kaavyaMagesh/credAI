@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import ExportPdfButton from '../components/ExportPdfButton';
 import { 
   Building2, 
   Sparkles, 
@@ -241,7 +243,10 @@ const TechCorners = () => (
   </>
 );
 
-export default function Home() {
+function HomeContent() {
+  const searchParams = useSearchParams();
+  const isEmbed = searchParams.get('embed') === 'true';
+
   const [isMounted, setIsMounted] = useState(false);
   const [step, setStep] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(false);
@@ -487,45 +492,51 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-[#020617] text-[#f8fafc] flex flex-col items-center py-10 px-4 sm:px-6 lg:px-8 font-space">
+    <main className={`min-h-screen bg-[#020617] text-[#f8fafc] flex flex-col items-center font-space ${
+      isEmbed ? 'py-3 px-3' : 'py-10 px-4 sm:px-6 lg:px-8'
+    }`}>
       <div className="w-full max-w-4xl flex-grow flex flex-col">
         
         {/* Utilitarian FUI Telemetry Header */}
-        <div className="w-full flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 px-4 py-3 bg-slate-950/20 border border-slate-800 text-[10px] font-mono text-slate-500 uppercase tracking-widest relative mb-6">
-          <div className="absolute top-0 left-0 w-1.5 h-1.5 bg-emerald-500/70" />
-          <div className="absolute top-0 right-0 w-1.5 h-1.5 bg-emerald-500/70" />
-          <div className="absolute bottom-0 left-0 w-1.5 h-1.5 bg-emerald-500/70" />
-          <div className="absolute bottom-0 right-0 w-1.5 h-1.5 bg-emerald-500/70" />
-          <div className="flex items-center gap-3">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span>SYS_REF: CRD-2026 // SYSTEM_STATE: ACTIVE</span>
+        {!isEmbed && (
+          <div className="w-full flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 px-4 py-3 bg-slate-950/20 border border-slate-800 text-[10px] font-mono text-slate-500 uppercase tracking-widest relative mb-6">
+            <div className="absolute top-0 left-0 w-1.5 h-1.5 bg-emerald-500/70" />
+            <div className="absolute top-0 right-0 w-1.5 h-1.5 bg-emerald-500/70" />
+            <div className="absolute bottom-0 left-0 w-1.5 h-1.5 bg-emerald-500/70" />
+            <div className="absolute bottom-0 right-0 w-1.5 h-1.5 bg-emerald-500/70" />
+            <div className="flex items-center gap-3">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>SYS_REF: CRD-2026 // SYSTEM_STATE: ACTIVE</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <span>VERSION: 1.1 // ENGINE: DETERMINISTIC</span>
+              <span className="text-slate-700 font-normal">|||| | || ||| |</span>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <span>VERSION: 1.1 // ENGINE: DETERMINISTIC</span>
-            <span className="text-slate-700 font-normal">|||| | || ||| |</span>
-          </div>
-        </div>
+        )}
 
         {/* Header Title block */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-slate-800">
-          <div className="text-left space-y-1">
-            <div className="flex items-center gap-2">
-              <div className="p-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-sm">
-                <Coins className="w-5 h-5" />
+        {!isEmbed && (
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-slate-800">
+            <div className="text-left space-y-1">
+              <div className="flex items-center gap-2">
+                <div className="p-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-sm">
+                  <Coins className="w-5 h-5" />
+                </div>
+                <h1 className="text-2xl font-bold uppercase tracking-tight text-white font-mono">credAI Stack Auditor</h1>
               </div>
-              <h1 className="text-2xl font-bold uppercase tracking-tight text-white font-mono">credAI Stack Auditor</h1>
+              <p className="text-xs text-slate-400 font-sans">Utilitarian cost auditing & redundant seed assessment.</p>
             </div>
-            <p className="text-xs text-slate-400 font-sans">Utilitarian cost auditing & redundant seed assessment.</p>
+            
+            <button 
+              onClick={handleReset}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider text-slate-400 hover:text-emerald-400 transition-colors border border-slate-850 hover:border-emerald-500/20 bg-slate-950/40 rounded-none shadow-sm"
+            >
+              <RotateCcw className="w-3 h-3" />
+              Reset stack state
+            </button>
           </div>
-          
-          <button 
-            onClick={handleReset}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider text-slate-400 hover:text-emerald-400 transition-colors border border-slate-850 hover:border-emerald-500/20 bg-slate-950/40 rounded-none shadow-sm"
-          >
-            <RotateCcw className="w-3 h-3" />
-            Reset stack state
-          </button>
-        </div>
+        )}
 
         {/* Strict Grid Wizard Steps Indicator */}
         <div className="grid grid-cols-4 border border-slate-800 bg-slate-950/20 mb-8 select-none text-left">
@@ -994,8 +1005,16 @@ export default function Home() {
           )}
 
           {/* STEP 4: AUDIT RESULTS DISPLAY */}
-          {step === 4 && auditResult && (
-            <div className="space-y-8 text-left">
+          {step === 4 && auditResult && (() => {
+            const spendPerDeveloper = Math.round(auditResult.totalCurrentSpend / teamSize);
+            let benchmarkAverage = 65;
+            if (teamSize <= 5) {
+              benchmarkAverage = 40;
+            } else if (teamSize > 25) {
+              benchmarkAverage = 90;
+            }
+            return (
+              <div className="space-y-8 text-left">
               
               {/* UTILITY HERO STAT PANEL */}
               <div className="bg-slate-950/60 border border-slate-800 rounded-none p-6 sm:p-8 flex flex-col md:flex-row gap-6 items-center justify-between relative overflow-hidden shadow-lg">
@@ -1057,6 +1076,49 @@ export default function Home() {
                   <div className="text-xs text-slate-350 leading-relaxed font-mono">
                     <p className="inline">{auditResult.aiSummary}</p>
                     <span className="inline-block w-1.5 h-3.5 bg-emerald-400 ml-1.5 align-middle animate-pulse" />
+                  </div>
+                </div>
+              )}
+
+              {/* BENCHMARK MODE PANEL */}
+              <div className="bg-slate-950/40 border border-slate-850 p-6 rounded-none text-left relative space-y-3 font-mono">
+                <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
+                <div className="flex items-center gap-2 text-slate-400 text-[10px] font-bold tracking-widest uppercase">
+                  <Activity className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  [ METRIC_BENCHMARK_ANALYSIS ]
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                  <div className="bg-slate-950/80 border border-slate-850/80 p-4 rounded-none">
+                    <span className="text-[8px] font-bold text-slate-550 uppercase tracking-widest block">YOUR AVERAGE AI BUDGET</span>
+                    <span className="text-xl sm:text-2xl font-black text-white mt-1">${spendPerDeveloper}<span className="text-[10px] font-normal text-slate-500"> / dev / mo</span></span>
+                  </div>
+                  <div className="bg-slate-950/80 border border-slate-850/80 p-4 rounded-none">
+                    <span className="text-[8px] font-bold text-slate-550 uppercase tracking-widest block">PEER AVERAGE ({teamSize <= 5 ? "TINY" : teamSize <= 25 ? "MID-SIZED" : "ENTERPRISE"} COHORT)</span>
+                    <span className="text-xl sm:text-2xl font-black text-emerald-400 mt-1">${benchmarkAverage}<span className="text-[10px] font-normal text-slate-500"> / dev / mo</span></span>
+                  </div>
+                </div>
+                <p className="text-[10px] text-slate-450 font-sans leading-relaxed pt-1">
+                  {spendPerDeveloper > benchmarkAverage ? (
+                    <span className="text-amber-400 font-semibold">[OVER_BUDGET]: Your team&apos;s average AI tool spend is higher than similar-sized peer averages by {Math.round((spendPerDeveloper - benchmarkAverage) / benchmarkAverage * 100)}%. Centralizing accounts is highly advised.</span>
+                  ) : (
+                    <span className="text-emerald-400 font-semibold">[OPTIMAL_BUDGET]: Outstanding! Your team&apos;s average AI tool spend is optimized and runs lower than peer averages by {Math.round((benchmarkAverage - spendPerDeveloper) / benchmarkAverage * 100)}%.</span>
+                  )}
+                </p>
+              </div>
+
+              {/* REFERRAL SYSTEM PANEL */}
+              {savedSlug && (
+                <div className="bg-slate-950/40 border border-slate-850 p-6 rounded-none text-left font-mono relative space-y-3">
+                  <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
+                  <div className="flex justify-between items-center border-b border-slate-850/80 pb-2.5">
+                    <span className="text-[10px] font-bold text-emerald-400 tracking-widest flex items-center gap-2">
+                      <Coins className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      [ REFERRAL_ACQUISITION_SYSTEM ]
+                    </span>
+                    <span className="text-[8px] text-slate-500">REF_CODE: {savedSlug.slice(0, 8).toUpperCase()}-CRD</span>
+                  </div>
+                  <div className="text-[11px] text-slate-350 leading-relaxed font-sans">
+                    Share this audit report or your unique referral link. When another team runs an audit using your code <span className="font-semibold text-emerald-400 font-mono">{savedSlug.slice(0, 8).toUpperCase()}-CRD</span>, <strong>both of you get 30% off</strong> on your first Credex enterprise license integration!
                   </div>
                 </div>
               )}
@@ -1252,7 +1314,7 @@ export default function Home() {
               </div>
 
               {/* Reset navigation */}
-              <div className="flex justify-center pt-6 border-t border-slate-800 mt-6 font-mono">
+              <div className="flex justify-center gap-4 pt-6 border-t border-slate-800 mt-6 font-mono print:hidden">
                 <button
                   onClick={() => setStep(1)}
                   className="flex items-center gap-1.5 border border-slate-850 bg-slate-950/40 text-slate-400 hover:text-white px-6 py-2.5 rounded-none transition-all text-xs font-mono uppercase tracking-wider"
@@ -1260,13 +1322,30 @@ export default function Home() {
                   <ChevronLeft className="w-3.5 h-3.5" />
                   Modify configurations
                 </button>
+                <ExportPdfButton />
               </div>
 
             </div>
-          )}
+          );
+        })()}
 
         </div>
       </div>
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen bg-[#020617] text-[#f8fafc] font-mono">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border border-emerald-500 border-t-transparent animate-spin" />
+          <p className="text-[10px] uppercase tracking-widest text-slate-400">Loading system catalog...</p>
+        </div>
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }
