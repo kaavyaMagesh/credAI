@@ -188,22 +188,6 @@ export default async function SharedAuditPage({ params }: PageProps) {
   return (
     <main className="min-h-screen bg-[#020617] text-[#f8fafc] flex flex-col items-center py-10 px-4 sm:px-6 lg:px-8 font-space">
       <div className="w-full max-w-4xl flex-grow flex flex-col">
-        
-        {/* Utilitarian FUI Telemetry Header */}
-        <div className="w-full flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 px-4 py-3 bg-slate-950/20 border border-slate-800 text-[10px] font-mono text-slate-500 uppercase tracking-widest relative mb-6">
-          <div className="absolute top-0 left-0 w-1.5 h-1.5 bg-emerald-500/70" />
-          <div className="absolute top-0 right-0 w-1.5 h-1.5 bg-emerald-500/70" />
-          <div className="absolute bottom-0 left-0 w-1.5 h-1.5 bg-emerald-500/70" />
-          <div className="absolute bottom-0 right-0 w-1.5 h-1.5 bg-emerald-500/70" />
-          <div className="flex items-center gap-3">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span>SYS_REF: CRD-SHARED // ACCESS: PUBLIC_DELEGATED</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <span>PII_STATE: SCRUBBED // SECURITY: SAFE</span>
-            <span className="text-slate-700 font-normal">|||| | || ||| |</span>
-          </div>
-        </div>
 
         {/* Header Title block */}
         <div className="flex items-center justify-between mb-8 pb-6 border-b border-slate-800">

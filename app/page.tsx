@@ -532,24 +532,6 @@ function HomeContent() {
       isEmbed ? 'py-3 px-3' : 'py-10 px-4 sm:px-6 lg:px-8'
     }`}>
       <div className="w-full max-w-4xl flex-grow flex flex-col">
-        
-        {/* Utilitarian FUI Telemetry Header */}
-        {!isEmbed && (
-          <div className="w-full flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 px-4 py-3 bg-slate-950/20 border border-slate-800 text-[10px] font-mono text-slate-500 uppercase tracking-widest relative mb-6">
-            <div className="absolute top-0 left-0 w-1.5 h-1.5 bg-emerald-500/70" />
-            <div className="absolute top-0 right-0 w-1.5 h-1.5 bg-emerald-500/70" />
-            <div className="absolute bottom-0 left-0 w-1.5 h-1.5 bg-emerald-500/70" />
-            <div className="absolute bottom-0 right-0 w-1.5 h-1.5 bg-emerald-500/70" />
-            <div className="flex items-center gap-3">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>SYS_REF: CRD-2026 // SYSTEM_STATE: ACTIVE</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <span>VERSION: 1.1 // ENGINE: DETERMINISTIC</span>
-              <span className="text-slate-700 font-normal">|||| | || ||| |</span>
-            </div>
-          </div>
-        )}
 
         {/* Header Title block */}
         {!isEmbed && (
