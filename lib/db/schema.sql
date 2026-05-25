@@ -50,6 +50,13 @@ ON public.audits FOR SELECT
 TO anon, authenticated
 USING (true);
 
+-- Allow anonymous updates on audits (for saving feedback)
+CREATE POLICY "Allow anonymous updates on audits" 
+ON public.audits FOR UPDATE 
+TO anon, authenticated
+USING (true)
+WITH CHECK (true);
+
 -- Allow anonymous inserts on leads (for email captures)
 CREATE POLICY "Allow anonymous inserts on leads" 
 ON public.leads FOR INSERT 
