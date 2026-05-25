@@ -46,5 +46,24 @@ Tests the core business logic engine, checking plan-seat fits, same-vendor downg
 
 ## Test Automation Metrics
 - **Test Framework:** Vitest
-- **Total Tests:** 7 active unit tests
+- **Total Tests:** 12 active assertions
 - **Coverage Target:** 100% coverage on core pricing parser and audit engine logical rules.
+
+---
+
+## 3. Third-Party Sandbox & Credentials Verification Guide
+
+To help reviewers test and audit the live integrations without crashing, `credAI` incorporates highly resilient graceful fallbacks for all third-party services:
+
+### 1. Database Connectivity (Supabase RLS)
+*   **Offline Mock Mode**: If `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are not set in `.env.local` or the deployment dashboard, the server operates in a secure mock offline mode—storing temporary assets under `/audit/mock-demo-slug`.
+*   **Production Dynamic Mode**: Once real credentials are set up, all submissions securely save and generate a unique dynamic UUID slug (e.g. `/audit/7b941d24-34fd-4ab1-8e9a-58fde56a8e8e`).
+*   **RLS Security Policy**: Ensure you run the `Allow anonymous updates on audits` RLS UPDATE policy in your Supabase SQL Editor to authorize client-side feedback logging.
+
+### 2. Synthesis Reports (Gemini LLM)
+*   **Fallback Template**: If no `GEMINI_API_KEY` is present or if API rate limits are reached, the server-side compiler dynamically generates a mathematically aligned, grammatically sound fallback report to guarantee 100% uptime.
+*   **Active Mode**: If a key is present, it directly queries the `gemini-2.5-flash` endpoint to generate high-density, quantitative summaries.
+
+### 3. Transactional Emails (Resend Free Sandbox Tier)
+*   **Local Sandbox Testing Restriction**: When using a free Resend developer sandbox key (`re_...`), Resend **strictly blocks** outbound emails to external domains. Emails will **only** deliver if sent to the **exact email address used to register the Resend account**.
+*   **Production Execution**: In a production environment, verifying a custom branded domain (e.g. `credex.ai` or `getcredai.com`) instantly unlocks global delivery to any target email.
