@@ -105,4 +105,56 @@ describe('Deterministic Audit Engine', () => {
     expect(audit.zeroStateMessage).toContain('fully optimized');
     expect(audit.showCredexBanner).toBe(false);
   });
+
+  it('should detect Claude Pro + Gemini Pro redundancy and recommend standardizing on Claude Pro', async () => {
+    const input: AuditInput = {
+      teamSize: 8,
+      useCase: 'mixed',
+      tools: [
+        { toolId: 'claude', planId: 'pro', seats: 8, enteredMonthlySpend: 136.00 },
+        { toolId: 'gemini', planId: 'pro', seats: 8, enteredMonthlySpend: 162.40 },
+      ],
+    };
+
+    const audit = await runAudit(input);
+
+    // Expect Claude to be optimal and Gemini to be removed (saving $162.40)
+    const claudeResult = audit.results.find(r => r.toolId === 'claude');
+    const geminiResult = audit.results.find(r => r.toolId === 'gemini');
+
+    expect(claudeResult).toBeDefined();
+    expect(claudeResult!.recommendationType).toBe('optimal');
+
+    expect(geminiResult).toBeDefined();
+    expect(geminiResult!.recommendationType).toBe('consolidate');
+    expect(geminiResult!.savings).toBe(162.40);
+    expect(geminiResult!.optimizedSpend).toBe(0);
+    expect(geminiResult!.recommendation).toContain('utilizing both Claude and Gemini');
+
+    expect(audit.monthlySavings).toBeCloseTo(162.40);
+  });
+
+  it('should detect OpenAI API + Gemini API overlap and recommend standardizing non-reasoning agent requests on Gemini API', async () => {
+    const input: AuditInput = {
+      teamSize: 10,
+      useCase: 'mixed',
+      tools: [
+        { toolId: 'openai_api', planId: 'api', seats: 1, enteredMonthlySpend: 500 },
+        { toolId: 'gemini_api', planId: 'api', seats: 1, enteredMonthlySpend: 100 },
+      ],
+    };
+
+    const audit = await runAudit(input);
+
+    const openaiApiResult = audit.results.find(r => r.toolId === 'openai_api');
+    
+    expect(openaiApiResult).toBeDefined();
+    expect(openaiApiResult!.recommendationType).toBe('credits');
+    // Shifting to Gemini Flash API cuts OpenAI Direct spend by 40% (500 * 0.60 = 300) -> savings = 200
+    // Then 300 optimized spend qualifies for Credex bulk credits (300 * 0.7 = 210) -> additional savings = 90
+    // Total savings = 200 + 90 = 290
+    expect(openaiApiResult!.savings).toBe(290);
+    expect(openaiApiResult!.optimizedSpend).toBe(210);
+    expect(openaiApiResult!.recommendation).toContain('standardizing high-throughput, non-reasoning agent requests on Gemini Flash API');
+  });
 });

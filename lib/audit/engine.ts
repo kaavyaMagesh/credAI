@@ -136,8 +136,49 @@ export async function runAudit(input: AuditInput): Promise<AggregateAudit> {
     // API / USAGE-BASED TOOLS Logic
     // ----------------------------------------------------
     if (toolId.endsWith('_api')) {
-      // Credits Flag for high-spend APIs
-      if (actualSpend >= 300) {
+      // 1. Cross-API Redundancy/Consolidation Logic
+      const apisInStack = input.tools.filter(t => 
+        t.toolId.endsWith('_api') && 
+        t.toolId !== toolId && 
+        Number(t.enteredMonthlySpend || 0) > 0
+      );
+
+      if (apisInStack.length > 0) {
+        const hasGeminiAPI = hasTool('gemini_api');
+        const hasOpenAIAPI = hasTool('openai_api');
+
+        if ((toolId === 'openai_api' || toolId === 'anthropic_api') && hasGeminiAPI) {
+          recType = 'consolidate';
+          actionType = 'switch_api';
+          optimizedSpend = Math.round(actualSpend * 0.60); // 40% savings
+          reason = `Multi-API Overlap: Your team is utilizing both ${displayName} and Gemini API. Optimize direct compute by standardizing high-throughput, non-reasoning agent requests on Gemini Flash API (which is up to 10x cheaper), reducing your ${displayName} monthly costs by 40%.`;
+          confidence = 0.92;
+        } else if (toolId === 'openai_api' && hasTool('anthropic_api')) {
+          recType = 'consolidate';
+          actionType = 'switch_api';
+          optimizedSpend = Math.round(actualSpend * 0.80); // 20% savings
+          reason = `Multi-API Overlap: Your team is utilizing both OpenAI and Anthropic APIs. Optimize costs by leveraging Anthropic's prompt caching for recurring system prompts, reducing your OpenAI API monthly costs by 20%.`;
+          confidence = 0.90;
+        } else if (toolId === 'anthropic_api' && hasOpenAIAPI) {
+          recType = 'consolidate';
+          actionType = 'switch_api';
+          optimizedSpend = Math.round(actualSpend * 0.85); // 15% savings
+          reason = `Multi-API Overlap: Your team is utilizing both Anthropic and OpenAI APIs. Optimize costs by routing brief structural inputs to OpenAI's cheaper GPT-4o mini tier, reducing your Anthropic API monthly costs by 15%.`;
+          confidence = 0.88;
+        }
+      }
+
+      // 2. Credits Flag for high-spend APIs (respecting any optimized spend calculated above)
+      if (optimizedSpend >= 300) {
+        creditFlag = true;
+        creditMessage = 'Save up to 30% on direct API compute costs by routing payments through Credex infrastructure credits.';
+        const prevReason = recType !== 'optimal' ? (reason + " Furthermore, ") : "";
+        optimizedSpend = Math.round(optimizedSpend * 0.70); // additional 30% savings via Credex credits
+        recType = 'credits';
+        actionType = 'credits';
+        reason = `${prevReason}your remaining API spend qualifies for Credex bulk credits. By acquiring credits, you could reduce monthly costs to $${optimizedSpend} without changing models.`;
+        confidence = 0.98;
+      } else if (actualSpend >= 300 && recType === 'optimal') {
         creditFlag = true;
         creditMessage = 'Save up to 30% on direct API compute costs by routing payments through Credex infrastructure credits.';
         optimizedSpend = Math.round(actualSpend * 0.70); // 30% savings via Credex credits
@@ -264,17 +305,54 @@ export async function runAudit(input: AuditInput): Promise<AggregateAudit> {
       capGap = ['GitHub Copilot CLI integration outside the editor'];
     }
     
-    // Redundancy 2: ChatGPT + Claude (Overlapping general-purpose assistants)
-    else if (toolId === 'chatgpt' && hasClaude && ['writing', 'research', 'mixed'].includes(input.useCase)) {
-      // Consolidate ChatGPT seats, keep Claude (usually preferred for long context)
-      recType = 'consolidate';
-      actionType = 'seat_reduction';
-      // Keep 20% of seats for ChatGPT edge cases, reduce 80% to Claude
-      const retainedSeats = Math.max(1, Math.round(seats * 0.20));
-      const pricePerSeat = officialPrice > 0 ? officialPrice : 20;
-      optimizedSpend = retainedSeats * pricePerSeat;
-      reason = `Highly redundant general-purpose stack. We recommend standardizing 80% of your chat seats on Claude, retaining ChatGPT only for specific web-browsing tasks.`;
-      confidence = 0.90;
+    // Redundancy 2: Generalized Assistant Redundancy (ChatGPT, Claude, Gemini)
+    else if (['chatgpt', 'claude', 'gemini'].includes(toolId) && ['writing', 'research', 'mixed'].includes(input.useCase)) {
+      const getPlanCategory = (pId: string) => {
+        const p = pId.toLowerCase();
+        if (p === 'enterprise') return 'enterprise';
+        if (['team', 'team standard', 'team premium', 'business', 'teams'].includes(p)) return 'team';
+        return 'individual';
+      };
+      
+      const currentPlanCategory = getPlanCategory(planId);
+      const assistantsInStack = input.tools.filter(t => 
+        ['chatgpt', 'claude', 'gemini'].includes(t.toolId) && 
+        t.seats > 0 &&
+        t.toolId !== toolId &&
+        getPlanCategory(t.planId) === currentPlanCategory
+      );
+
+      if (assistantsInStack.length > 0) {
+        const hasClaudeInStack = assistantsInStack.some(t => t.toolId === 'claude') || (toolId === 'claude');
+        const hasGPTInStack = assistantsInStack.some(t => t.toolId === 'chatgpt') || (toolId === 'chatgpt');
+
+        if (toolId !== 'claude' && hasClaudeInStack) {
+          if (toolId === 'chatgpt') {
+            // Keep 20% of seats for ChatGPT edge cases, reduce 80% to Claude
+            recType = 'consolidate';
+            actionType = 'seat_reduction';
+            const retainedSeats = Math.max(1, Math.round(seats * 0.20));
+            const pricePerSeat = officialPrice > 0 ? officialPrice : 20;
+            optimizedSpend = retainedSeats * pricePerSeat;
+            reason = `Redundancy Alert: Your team is utilizing both Claude and ChatGPT on equivalent ${currentPlanCategory} tiers. We recommend standardizing 80% of your chat seats on Claude, retaining ChatGPT only for specific web-browsing or custom GPT tasks.`;
+            confidence = 0.90;
+          } else if (toolId === 'gemini') {
+            // Remove Gemini entirely in favor of Claude
+            recType = 'consolidate';
+            actionType = 'remove';
+            optimizedSpend = 0;
+            reason = `Redundancy Alert: Your team is utilizing both Claude and Gemini on equivalent ${currentPlanCategory} tiers. Standardize on Claude to eliminate overlapping assistant subscriptions.`;
+            confidence = 0.94;
+          }
+        } else if (toolId === 'gemini' && hasGPTInStack) {
+          // Remove Gemini in favor of ChatGPT
+          recType = 'consolidate';
+          actionType = 'remove';
+          optimizedSpend = 0;
+          reason = `Redundancy Alert: Your team is utilizing both ChatGPT and Gemini on equivalent ${currentPlanCategory} tiers. Standardize on ChatGPT to eliminate overlapping assistant subscriptions.`;
+          confidence = 0.92;
+        }
+      }
     }
 
     // Redundancy 3: Windsurf + Cursor (Dual AI coding editors)
