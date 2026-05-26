@@ -61,6 +61,8 @@ Tests the core business logic engine, checking plan-seat fits, same-vendor downg
   - Asserts that holding multiple seats of a high-tier individual Max plan (like Claude Max or Windsurf Max) triggers a downgrade recommendation to professional Team tiers, cutting pricing overhead by 75%+.
 * **Test Case 11:** `should dynamically lower the confidence score and append a warning if a pricing discrepancy is detected`
   - Asserts that when a user-entered spend rate diverges from standard catalog pricing (e.g. entering $17 for ChatGPT Plus instead of list price $20), the engine dynamically lowers its calculation confidence score to 80% and appends a warning to the recommendation.
+* **Test Case 12:** `should flag high retail Gemini usage for direct Credex bulk licensing discount`
+  - Asserts that high-spend retail Gemini accounts ($\ge \$200$/mo) now trigger the `creditFlag` and suggest the 25% discount bulk-licensing option with the pre-filled consultation modal.
 
 
 

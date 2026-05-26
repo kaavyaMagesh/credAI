@@ -242,6 +242,23 @@ describe('Deterministic Audit Engine', () => {
     expect(result!.confidence).toBe(0.80);
     expect(result!.recommendation).toContain('pricing discrepancy');
   });
+
+  it('should flag high retail Gemini usage for direct Credex bulk licensing discount', async () => {
+    const input: AuditInput = {
+      teamSize: 15,
+      useCase: 'mixed',
+      tools: [
+        { toolId: 'gemini', planId: 'pro', seats: 15, enteredMonthlySpend: 300 },
+      ],
+    };
+
+    const audit = await runAudit(input);
+
+    const result = audit.results.find(r => r.toolId === 'gemini');
+    expect(result).toBeDefined();
+    expect(result!.creditFlag).toBe(true);
+    expect(result!.creditMessage).toContain('Reduce your active retail Gemini costs');
+  });
 });
 
 

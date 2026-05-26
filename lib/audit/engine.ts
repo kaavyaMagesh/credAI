@@ -415,7 +415,7 @@ export async function runAudit(input: AuditInput): Promise<AggregateAudit> {
     // CREDEX BRAND CHECK
     // ----------------------------------------------------
     // If no action was taken, but the tool is supported by Credex and spend is high
-    const supportsCredex = ['cursor', 'claude', 'chatgpt'].includes(toolId);
+    const supportsCredex = ['cursor', 'claude', 'chatgpt', 'gemini'].includes(toolId);
     if (recType === 'optimal' && supportsCredex && actualSpend >= 200) {
       creditFlag = true;
       creditMessage = `Reduce your active retail ${displayName} costs by up to 25% through Credex bulk licensing options.`;
