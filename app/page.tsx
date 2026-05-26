@@ -1330,7 +1330,7 @@ function HomeContent() {
                       <CheckCircle2 className="w-4 h-4" />
                     </div>
                     <div className="space-y-1">
-                      <h4 className="text-xs font-bold text-white uppercase tracking-widest font-mono">Your stack already appears reasonably optimized.</h4>
+                      <h4 className="text-xs font-bold text-white uppercase tracking-widest font-mono">JOIN WAITLIST</h4>
                       <p className="text-[10px] text-slate-450 font-sans leading-relaxed">
                         Join the waitlist to get notified when new optimization opportunities become available.
                       </p>
