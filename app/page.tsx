@@ -1300,7 +1300,7 @@ function HomeContent() {
               </div>
 
               {/* CREDEX CONDITIONAL BANNER OR LOW-SAVINGS HONESTY BANNER */}
-              {auditResult.monthlySavings > 500 ? (
+              {auditResult.monthlySavings > 300 ? (
                 <div className="bg-emerald-950/5 border border-emerald-500/30 rounded-none p-6 flex flex-col sm:flex-row gap-5 items-center justify-between text-left font-mono relative">
                   <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
                   <div className="flex gap-3.5 items-start">
