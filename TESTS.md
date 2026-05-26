@@ -28,7 +28,15 @@ Verifies that the live pricing parser programmatically reads, splits, and accura
 * **Test Case 2:** `should parse the API tokens correctly`
   - Asserts input/output token pricing per million is successfully extracted for Anthropic (Opus/Sonnet/Haiku) and OpenAI (GPT-5.5/5.4) models.
 
-### 2. `tests/audit.test.ts`
+### 2. `tests/ai.test.ts`
+Verifies the server-side fallback AI text generation logic when the Gemini API is unconfigured or rate-limited.
+
+* **Test Case 1:** `should generate an appropriate optimized summary for zero savings`
+  - Verifies that when a stack is fully optimized (savings = $0), a mathematically sound, structured summary of "peak economic efficiency" is compiled.
+* **Test Case 2:** `should generate a rich synthesis summary for non-zero savings`
+  - Asserts that when stack leakages are present, a quantitative synthesis report is dynamically built outlining exact plan tiers, direct savings numbers, and consolidation actions.
+
+### 3. `tests/audit.test.ts`
 Tests the core business logic engine, checking plan-seat fits, same-vendor downgrades, cross-tool redundancies, and alternative options.
 
 * **Test Case 1:** `should detect Copilot + Cursor redundancy and recommend consolidating to Cursor`
@@ -46,7 +54,7 @@ Tests the core business logic engine, checking plan-seat fits, same-vendor downg
 * **Test Case 7:** `should detect OpenAI API + Gemini API overlap and recommend standardizing non-reasoning agent requests on Gemini API`
   - Asserts standardizing high-throughput API agent workloads on cheaper Gemini API endpoints while retaining OpenAI for critical items.
 
-### 3. `tests/abuse.test.ts`
+### 4. `tests/abuse.test.ts`
 Validates security mechanisms, rate limiting behaviors, and bot deflection controls.
 
 * **Test Case 1:** `Rate Limiter - should allow up to 5 requests in a window and then rate limit`
