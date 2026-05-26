@@ -743,7 +743,7 @@ function HomeContent() {
                 <p className="text-xs text-slate-400 mt-1">Specify team scaling parameters and workload types to feed calculations.</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 text-left">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2 text-left">
                 {/* Team Size */}
                 <div className="flex flex-col gap-2">
                   <label htmlFor="team-size" className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">
@@ -790,6 +790,22 @@ function HomeContent() {
                     <option value="mixed">Mixed Multipurpose Stack</option>
                   </select>
                   <span className="text-[10px] text-slate-500">Applies targeted rules to eliminate tool overlaps.</span>
+                </div>
+
+                {/* Referral Code (Optional) */}
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="ref-code" className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">
+                    Referral / Promo Code
+                  </label>
+                  <input
+                    id="ref-code"
+                    type="text"
+                    placeholder="e.g. INIT-CRD"
+                    value={referralCode}
+                    onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                    className="bg-slate-950/80 border border-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-none px-4 py-2.5 text-white font-mono text-sm outline-none transition-colors w-full"
+                  />
+                  <span className="text-[10px] text-slate-500">Apply unique friend or partner promo codes.</span>
                 </div>
               </div>
 
