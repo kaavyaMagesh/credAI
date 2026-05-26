@@ -274,6 +274,17 @@ function HomeContent() {
   const [copied, setCopied] = useState<boolean>(false);
   const [origin, setOrigin] = useState<string>('http://localhost:3000');
   const [feedbackText, setFeedbackText] = useState<string>('');
+  
+  // Consultation & Waitlist State
+  const [isConsultModalOpen, setIsConsultModalOpen] = useState<boolean>(false);
+  const [waitlistEmail, setWaitlistEmail] = useState<string>('');
+  const [waitlistSubmitted, setWaitlistSubmitted] = useState<boolean>(false);
+  const [consultSubmitted, setConsultSubmitted] = useState<boolean>(false);
+  const [consultSubmitting, setConsultSubmitting] = useState<boolean>(false);
+  const [consultEmail, setConsultEmail] = useState<string>('');
+  const [consultCompany, setConsultCompany] = useState<string>('');
+  const [consultRole, setConsultRole] = useState<string>('');
+  const [consultTeamSize, setConsultTeamSize] = useState<number>(1);
   const [feedbackSubmitting, setFeedbackSubmitting] = useState<boolean>(false);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState<boolean>(false);
 
@@ -381,6 +392,55 @@ function HomeContent() {
       console.error('Error submitting feedback:', err);
     } finally {
       setFeedbackSubmitting(false);
+    }
+  };
+
+  // Sync state values from wizard when modal opens
+  useEffect(() => {
+    if (isMounted && isConsultModalOpen) {
+      setConsultEmail(email || '');
+      setConsultCompany(companyName || '');
+      setConsultRole(role || '');
+      setConsultTeamSize(teamSize || 1);
+    }
+  }, [isConsultModalOpen, email, companyName, role, teamSize, isMounted]);
+
+  const handleWaitlistSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!waitlistEmail.trim()) return;
+    setWaitlistSubmitted(true);
+    setWaitlistEmail('');
+  };
+
+  const handleConsultSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!consultEmail.trim()) return;
+
+    setConsultSubmitting(true);
+    try {
+      const response = await fetch('/api/consult', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: consultEmail,
+          companyName: consultCompany || null,
+          role: consultRole || null,
+          teamSize: consultTeamSize || 1,
+          auditId: savedSlug || null
+        })
+      });
+
+      if (response.ok) {
+        setConsultSubmitted(true);
+      } else {
+        console.error('Failed to submit consultation');
+      }
+    } catch (err) {
+      console.error('Error submitting consultation:', err);
+    } finally {
+      setConsultSubmitting(false);
     }
   };
 
@@ -1040,17 +1100,14 @@ function HomeContent() {
                 
                 <div className="space-y-3 font-mono">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="px-2 py-0.5 text-[8px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 rounded-none tracking-widest uppercase select-none">
-                      AUDIT // VERIFIED
-                    </span>
                     <span className={`px-2 py-0.5 text-[8px] font-bold rounded-none border uppercase tracking-widest select-none ${
                       auditResult.overallSeverity === 'high'
                         ? 'bg-red-500/10 text-red-400 border-red-500/30'
                         : auditResult.overallSeverity === 'medium'
                         ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
                         : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                    }`}>
-                      LVL: {auditResult.overallSeverity}
+                     }`}>
+                      SEVERITY LEVEL: {auditResult.overallSeverity}
                     </span>
                   </div>
 
@@ -1086,7 +1143,7 @@ function HomeContent() {
                   <div className="flex justify-between items-center mb-3 pb-2 border-b border-slate-800">
                     <span className="text-[10px] font-bold text-emerald-400 tracking-widest flex items-center gap-2">
                       <span className="inline-block w-2 h-2 bg-emerald-500 animate-pulse shrink-0" />
-                      [ METRIC_SYNTHESIS_REPORT // COGNITIVE_ANALYSIS ]
+                      AI SUMMARY
                     </span>
                     <span className="text-[8px] text-slate-500">ENGINE: GEMINI_2.5_FLASH</span>
                   </div>
@@ -1098,12 +1155,74 @@ function HomeContent() {
                 </div>
               )}
 
+              {/* CREDEX CONDITIONAL BANNER OR LOW-SAVINGS HONESTY BANNER */}
+              {auditResult.monthlySavings > 500 ? (
+                <div className="bg-emerald-950/5 border border-emerald-500/30 rounded-none p-6 flex flex-col sm:flex-row gap-5 items-center justify-between text-left font-mono relative">
+                  <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
+                  <div className="flex gap-3.5 items-start">
+                    <div className="p-2.5 bg-emerald-500/10 rounded-none border border-emerald-500/30 text-emerald-400 shrink-0 select-none">
+                      <Coins className="w-4 h-4" />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="text-xs font-bold text-white uppercase tracking-widest font-mono">You may qualify for discounted enterprise AI credits.</h4>
+                      <p className="text-[10px] text-slate-450 font-sans leading-relaxed">
+                        Teams with similar usage patterns reduced spend further through Credex marketplace pricing.
+                      </p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setIsConsultModalOpen(true)}
+                    className="bg-emerald-500 hover:bg-emerald-600 text-[#020617] border border-emerald-400 font-mono font-bold uppercase tracking-wider text-[10px] px-5 py-2.5 rounded-none shadow-md shrink-0 transition-all cursor-pointer whitespace-nowrap"
+                  >
+                    Book Free Consultation
+                  </button>
+                </div>
+              ) : (
+                <div className="p-6 bg-slate-950/40 border border-slate-850 rounded-none text-left space-y-4 font-mono relative">
+                  <div className="absolute top-0 left-0 w-2 h-[1px] bg-slate-550" />
+                  <div className="flex gap-3.5 items-start">
+                    <div className="p-2.5 bg-slate-900 rounded-none border border-slate-800 text-slate-400 shrink-0 select-none">
+                      <CheckCircle2 className="w-4 h-4" />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="text-xs font-bold text-white uppercase tracking-widest font-mono">Your stack already appears reasonably optimized.</h4>
+                      <p className="text-[10px] text-slate-450 font-sans leading-relaxed">
+                        Join the waitlist to get notified when new optimization opportunities become available.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {waitlistSubmitted ? (
+                    <div className="text-[10px] text-emerald-400 font-mono px-3 py-1.5 bg-emerald-500/5 border border-emerald-500/20 max-w-sm">
+                      [ WAITLIST_LOGGED ]: Thank you! We will notify you of fresh API rate plans or licenses.
+                    </div>
+                  ) : (
+                    <form onSubmit={handleWaitlistSubmit} className="flex flex-col sm:flex-row gap-2 max-w-md pt-1">
+                      <input
+                        type="email"
+                        required
+                        placeholder="Enter email for optimization alerts"
+                        value={waitlistEmail}
+                        onChange={(e) => setWaitlistEmail(e.target.value)}
+                        className="bg-slate-950 border border-slate-800 focus:border-slate-500 rounded-none px-3 py-1.5 text-[10px] text-white outline-none font-mono flex-grow"
+                      />
+                      <button
+                        type="submit"
+                        className="bg-slate-900 hover:bg-slate-850 text-white border border-slate-700 font-mono font-bold uppercase tracking-wider text-[9px] px-4 py-2 rounded-none transition-all cursor-pointer shrink-0"
+                      >
+                        Join Waitlist
+                      </button>
+                    </form>
+                  )}
+                </div>
+              )}
+
               {/* BENCHMARK MODE PANEL */}
               <div className="bg-slate-950/40 border border-slate-850 p-6 rounded-none text-left relative space-y-3 font-mono">
                 <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
                 <div className="flex items-center gap-2 text-slate-400 text-[10px] font-bold tracking-widest uppercase">
                   <Activity className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  [ METRIC_BENCHMARK_ANALYSIS ]
+                  METRIC BENCHMARK ANALYSIS
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                   <div className="bg-slate-950/80 border border-slate-850/80 p-4 rounded-none">
@@ -1117,29 +1236,14 @@ function HomeContent() {
                 </div>
                 <p className="text-[10px] text-slate-450 font-sans leading-relaxed pt-1">
                   {spendPerDeveloper > benchmarkAverage ? (
-                    <span className="text-amber-400 font-semibold">[OVER_BUDGET]: Your team&apos;s average AI tool spend is higher than similar-sized peer averages by {Math.round((spendPerDeveloper - benchmarkAverage) / benchmarkAverage * 100)}%. Centralizing accounts is highly advised.</span>
+                    <span className="text-amber-400 font-semibold">OVER BUDGET: Your team&apos;s average AI tool spend is higher than similar-sized peer averages by {Math.round((spendPerDeveloper - benchmarkAverage) / benchmarkAverage * 100)}%. Centralizing accounts is highly advised.</span>
+                  ) : spendPerDeveloper < benchmarkAverage ? (
+                    <span className="text-emerald-400 font-semibold">OPTIMAL BUDGET: Outstanding! Your team&apos;s average AI tool spend is optimized and runs lower than peer averages by {Math.round((benchmarkAverage - spendPerDeveloper) / benchmarkAverage * 100)}%.</span>
                   ) : (
-                    <span className="text-emerald-400 font-semibold">[OPTIMAL_BUDGET]: Outstanding! Your team&apos;s average AI tool spend is optimized and runs lower than peer averages by {Math.round((benchmarkAverage - spendPerDeveloper) / benchmarkAverage * 100)}%.</span>
+                    <span className="text-emerald-400 font-semibold">OPTIMAL BUDGET: Well aligned! Your team&apos;s average AI tool spend matches the peer cohort average exactly.</span>
                   )}
                 </p>
               </div>
-
-              {/* REFERRAL SYSTEM PANEL */}
-              {savedSlug && (
-                <div className="bg-slate-950/40 border border-slate-850 p-6 rounded-none text-left font-mono relative space-y-3">
-                  <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
-                  <div className="flex justify-between items-center border-b border-slate-850/80 pb-2.5">
-                    <span className="text-[10px] font-bold text-emerald-400 tracking-widest flex items-center gap-2">
-                      <Coins className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                      [ REFERRAL_ACQUISITION_SYSTEM ]
-                    </span>
-                    <span className="text-[8px] text-slate-500">REF_CODE: {savedSlug.slice(0, 8).toUpperCase()}-CRD</span>
-                  </div>
-                  <div className="text-[11px] text-slate-350 leading-relaxed font-sans">
-                    Share this audit report or your unique referral link. When another team runs an audit using your code <span className="font-semibold text-emerald-400 font-mono">{savedSlug.slice(0, 8).toUpperCase()}-CRD</span>, <strong>both of you get 30% off</strong> on your first Credex enterprise license integration!
-                  </div>
-                </div>
-              )}
 
               {/* Dynamic Shareable Link Card */}
               {savedSlug && (
@@ -1178,68 +1282,7 @@ function HomeContent() {
                 </div>
               )}
 
-              {/* Verification payload JSON log */}
-              <div className="border border-slate-800 bg-slate-950/10 p-4 rounded-none font-mono text-left relative">
-                <div className="absolute top-0 left-0 w-1.5 h-1.5 bg-slate-800" />
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-[9px] font-bold text-slate-500 tracking-widest">VERIFICATION LOG</span>
-                  <span className="text-[8px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-none font-mono border border-emerald-500/30">PARSER_OK</span>
-                </div>
-                <details className="cursor-pointer">
-                  <summary className="text-[11px] text-slate-400 hover:text-emerald-400 transition-colors font-medium">
-                    Toggle raw engine result JSON payload structures
-                  </summary>
-                  <pre className="text-[10px] font-mono bg-slate-950 border border-slate-850 p-4 rounded-none overflow-x-auto mt-2 text-slate-350 max-h-40 overflow-y-auto">
-                    {JSON.stringify(auditResult, null, 2)}
-                  </pre>
-                </details>
-              </div>
 
-              {/* Zero State Optimized */}
-              {auditResult.zeroStateMessage && (
-                <div className="p-6 bg-emerald-950/5 border border-emerald-500/20 rounded-none text-center space-y-2 font-mono relative">
-                  <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
-                  <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
-                  <h3 className="text-xs font-bold text-white uppercase tracking-widest">Optimization level optimal</h3>
-                  <p className="text-[10px] text-slate-450 max-w-lg mx-auto font-sans leading-relaxed">{auditResult.zeroStateMessage}</p>
-                </div>
-              )}
-
-              {/* Honest Low Savings State */}
-              {auditResult.monthlySavings <= 50 && auditResult.monthlySavings > 0 && (
-                <div className="p-5 bg-blue-950/5 border border-blue-500/20 rounded-none text-left space-y-2 flex gap-4 items-start font-mono">
-                  <div className="p-2 bg-blue-500/10 rounded-none text-blue-400 select-none shrink-0 border border-blue-500/10">
-                    <FileText className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-white uppercase tracking-widest">Stack is highly optimized</h4>
-                    <p className="text-[10px] text-slate-450 leading-relaxed mt-0.5 font-sans">
-                      The calculations generated minor savings of only ${auditResult.monthlySavings}/mo. We do not advise modifying workspace accounts or disrupting team workflows for negligible financial differences. Keep your setup intact!
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* CREDEX CONDITIONAL BANNER - Displays strictly if savings > $500 */}
-              {auditResult.monthlySavings > 500 && (
-                <div className="bg-emerald-950/5 border border-emerald-500/30 rounded-none p-5 flex flex-col sm:flex-row gap-4 items-center justify-between text-left font-mono relative">
-                  <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
-                  <div className="flex gap-3 items-center">
-                    <div className="p-2.5 bg-emerald-500/10 rounded-none border border-emerald-500/30 text-emerald-400 shrink-0 select-none">
-                      <Coins className="w-4 h-4" />
-                    </div>
-                    <div className="space-y-0.5">
-                      <h4 className="text-xs font-bold text-white uppercase tracking-widest">Credex bulk integration conversion</h4>
-                      <p className="text-[10px] text-slate-450 font-sans leading-relaxed">
-                        Centralizing stack seat registers qualifies your team for up to 30% reduction via bulk enterprise licenses.
-                      </p>
-                    </div>
-                  </div>
-                  <button className="bg-emerald-500 hover:bg-emerald-600 text-[#020617] border border-emerald-400 font-mono font-bold uppercase tracking-wider text-[10px] px-4 py-2 rounded-none shadow-md shrink-0 transition-all">
-                    Acquire Credits
-                  </button>
-                </div>
-              )}
 
               {/* Breakdowns strict list */}
               <div className="space-y-4 font-mono">
@@ -1275,11 +1318,11 @@ function HomeContent() {
                                 ? 'bg-red-500/10 text-red-400 border-red-500/20'
                                 : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
                             }`}>
-                              {isOptimal ? 'OPTIMAL' : 'REDUN_ALERT'}
+                              {isOptimal ? 'OPTIMAL' : 'REDUNDANT'}
                             </span>
                             
                             <span className="text-[9px] text-slate-400 font-semibold bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-none select-none">
-                              CONF: {Math.round(result.confidence * 100)}%
+                              CONFIDENCE: {Math.round(result.confidence * 100)}%
                             </span>
                           </div>
                         </div>
@@ -1331,13 +1374,47 @@ function HomeContent() {
                 </div>
               </div>
 
+              {/* REFERRAL SYSTEM PANEL */}
+              {savedSlug && (
+                <div className="bg-slate-950/40 border border-slate-850 p-6 rounded-none text-left font-mono relative space-y-3">
+                  <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
+                  <div className="flex justify-between items-center border-b border-slate-850/80 pb-2.5">
+                    <span className="text-[10px] font-bold text-emerald-400 tracking-widest flex items-center gap-2">
+                      <Coins className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      REFERRAL ACQUISITION SYSTEM
+                    </span>
+                    <span className="text-[8px] text-slate-500">REF_CODE: {savedSlug.slice(0, 8).toUpperCase()}-CRD</span>
+                  </div>
+                  <div className="text-[11px] text-slate-350 leading-relaxed font-sans font-medium">
+                    Share this audit report or your unique referral link. When another team runs an audit using your code <span className="font-semibold text-emerald-400 font-mono">{savedSlug.slice(0, 8).toUpperCase()}-CRD</span>, <strong>both of you get 30% off</strong> on your first Credex enterprise license integration!
+                  </div>
+                </div>
+              )}
+
+              {/* Verification payload JSON log */}
+              <div className="border border-slate-800 bg-slate-950/10 p-4 rounded-none font-mono text-left relative">
+                <div className="absolute top-0 left-0 w-1.5 h-1.5 bg-slate-800" />
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-[9px] font-bold text-slate-550 tracking-widest">VERIFICATION LOG</span>
+                  <span className="text-[8px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-none font-mono border border-emerald-500/30">PARSER_OK</span>
+                </div>
+                <details className="cursor-pointer">
+                  <summary className="text-[11px] text-slate-400 hover:text-emerald-400 transition-colors font-medium">
+                    Toggle raw engine result JSON payload structures
+                  </summary>
+                  <pre className="text-[10px] font-mono bg-slate-950 border border-slate-850 p-4 rounded-none overflow-x-auto mt-2 text-slate-350 max-h-40 overflow-y-auto">
+                    {JSON.stringify(auditResult, null, 2)}
+                  </pre>
+                </details>
+              </div>
+
               {/* FEEDBACK & INTEGRATION REQUESTS PANEL */}
               <div className="bg-slate-950/40 border border-slate-850 p-6 rounded-none text-left font-mono relative space-y-4 print:hidden">
                 <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
                 <div className="flex justify-between items-center border-b border-slate-850/80 pb-2.5">
                   <span className="text-[10px] font-bold text-emerald-400 tracking-widest flex items-center gap-2">
                     <FileText className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                    [ FEEDBACK_ & _TOOL_REQUESTS ]
+                    FEEDBACK & TOOL REQUESTS
                   </span>
                   <span className="text-[8px] text-slate-500">FEEDBACK_TELEMETRY</span>
                 </div>
@@ -1388,6 +1465,121 @@ function HomeContent() {
             </div>
           );
         })()}
+
+        {/* CONSULTATION LEAD CAPTURE MODAL */}
+        {isConsultModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm font-mono">
+            <div className="relative w-full max-w-md bg-[#020617] border border-emerald-500/30 p-6 sm:p-8 space-y-6 shadow-2xl rounded-none">
+              {/* Tech Corners decal */}
+              <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-emerald-500" />
+              <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-emerald-500" />
+              <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-emerald-500" />
+              <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-emerald-500" />
+
+              <div className="flex justify-between items-start border-b border-slate-850 pb-4">
+                <div className="space-y-1 text-left">
+                  <span className="px-2 py-0.5 text-[8px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 rounded-none tracking-widest uppercase select-none">
+                    SAVINGS ESCALATION
+                  </span>
+                  <h3 className="text-xs font-bold text-white uppercase tracking-wider font-mono">Book Free Consultation</h3>
+                </div>
+                <button 
+                  onClick={() => { setIsConsultModalOpen(false); setConsultSubmitted(false); }}
+                  className="text-slate-500 hover:text-white transition-colors text-xs p-1"
+                >
+                  [ESC]
+                </button>
+              </div>
+
+              {consultSubmitted ? (
+                <div className="space-y-4 py-4 text-center">
+                  <div className="w-12 h-12 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-none flex items-center justify-center mx-auto">
+                    <Check className="w-6 h-6" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="text-xs font-bold text-white uppercase tracking-wider">Consultation Request Logged</h4>
+                    <p className="text-[10px] text-slate-450 font-sans leading-relaxed max-w-xs mx-auto">
+                      An enterprise licensing strategist will analyze your stack optimization indicators and reach out to you within 24 hours.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => { setIsConsultModalOpen(false); setConsultSubmitted(false); }}
+                    className="bg-emerald-500 hover:bg-emerald-600 text-[#020617] border border-emerald-400 font-mono font-bold uppercase tracking-wider text-[10px] px-5 py-2.5 rounded-none shadow-md transition-all cursor-pointer w-full"
+                  >
+                    Return to Audit
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleConsultSubmit} className="space-y-4 text-left">
+                  <div className="space-y-3">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[9px] font-bold text-slate-455 uppercase tracking-widest">Work Email Address</label>
+                      <input
+                        type="email"
+                        required
+                        value={consultEmail}
+                        onChange={(e) => setConsultEmail(e.target.value)}
+                        className="bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-none px-3.5 py-2 text-xs text-white outline-none w-full"
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[9px] font-bold text-slate-455 uppercase tracking-widest">Company / Org Name</label>
+                      <input
+                        type="text"
+                        required
+                        value={consultCompany}
+                        onChange={(e) => setConsultCompany(e.target.value)}
+                        className="bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-none px-3.5 py-2 text-xs text-white outline-none w-full"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] font-bold text-slate-455 uppercase tracking-widest">Job Title / Role</label>
+                        <input
+                          type="text"
+                          required
+                          value={consultRole}
+                          onChange={(e) => setConsultRole(e.target.value)}
+                          className="bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-none px-3.5 py-2 text-xs text-white outline-none w-full"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] font-bold text-slate-455 uppercase tracking-widest">Team Size (Seats)</label>
+                        <input
+                          type="number"
+                          min="1"
+                          required
+                          value={consultTeamSize}
+                          onChange={(e) => setConsultTeamSize(Math.max(1, Number(e.target.value)))}
+                          className="bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-none px-3.5 py-2 text-xs text-white outline-none w-full"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsConsultModalOpen(false)}
+                      className="border border-slate-800 bg-slate-950/40 text-slate-400 hover:text-white px-5 py-2.5 rounded-none transition-all text-xs font-mono uppercase tracking-wider flex-grow text-center"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={consultSubmitting}
+                      className="bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-850 disabled:text-slate-650 text-[#020617] border border-emerald-400 font-mono font-bold uppercase tracking-wider text-xs px-6 py-2.5 rounded-none shadow-md transition-all cursor-pointer flex-grow text-center"
+                    >
+                      {consultSubmitting ? 'Submitting...' : 'Book Free Consultation'}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        )}
 
         </div>
       </div>

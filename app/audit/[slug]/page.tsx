@@ -246,7 +246,7 @@ export default async function SharedAuditPage({ params }: PageProps) {
                     ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
                     : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                 }`}>
-                  LVL: {results.overallSeverity}
+                  SEVERITY LEVEL: {results.overallSeverity}
                 </span>
               </div>
 
@@ -282,9 +282,9 @@ export default async function SharedAuditPage({ params }: PageProps) {
               <div className="flex justify-between items-center mb-3 pb-2 border-b border-slate-800">
                 <span className="text-[10px] font-bold text-emerald-400 tracking-widest flex items-center gap-2">
                   <span className="inline-block w-2 h-2 bg-emerald-500 animate-pulse shrink-0" />
-                  [ METRIC_SYNTHESIS_REPORT // COGNITIVE_ANALYSIS ]
+                  AI SUMMARY
                 </span>
-                <span className="text-[8px] text-slate-500">ENGINE: GEMINI_2.5_FLASH</span>
+                <span className="text-[8px] text-slate-550">ENGINE: GEMINI_2.5_FLASH</span>
               </div>
               
               <div className="text-xs text-slate-350 leading-relaxed font-mono">
@@ -294,12 +294,66 @@ export default async function SharedAuditPage({ params }: PageProps) {
             </div>
           )}
 
+          {/* CREDEX CONDITIONAL BANNER OR LOW-SAVINGS HONESTY BANNER */}
+          {results.monthlySavings > 500 ? (
+            <div className="bg-emerald-950/5 border border-emerald-500/30 rounded-none p-6 flex flex-col sm:flex-row gap-5 items-center justify-between text-left font-mono relative">
+              <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
+              <div className="flex gap-3.5 items-start">
+                <div className="p-2.5 bg-emerald-500/10 rounded-none border border-emerald-500/30 text-emerald-400 shrink-0 select-none">
+                  <Coins className="w-4 h-4" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-xs font-bold text-white uppercase tracking-widest font-mono">You may qualify for discounted enterprise AI credits.</h4>
+                  <p className="text-[10px] text-slate-450 font-sans leading-relaxed">
+                    Teams with similar usage patterns reduced spend further through Credex marketplace pricing.
+                  </p>
+                </div>
+              </div>
+              <Link 
+                href="https://calendly.com/credex-audit/escalation"
+                target="_blank"
+                className="bg-emerald-500 hover:bg-emerald-600 text-[#020617] border border-emerald-400 font-mono font-bold uppercase tracking-wider text-[10px] px-5 py-2.5 rounded-none shadow-md shrink-0 transition-all text-center whitespace-nowrap"
+              >
+                Book Free Consultation
+              </Link>
+            </div>
+          ) : (
+            <div className="p-6 bg-slate-950/40 border border-slate-850 rounded-none text-left space-y-4 font-mono relative">
+              <div className="absolute top-0 left-0 w-2 h-[1px] bg-slate-550" />
+              <div className="flex gap-3.5 items-start">
+                <div className="p-2.5 bg-slate-900 rounded-none border border-slate-800 text-slate-400 shrink-0 select-none">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-xs font-bold text-white uppercase tracking-widest font-mono">Your stack already appears reasonably optimized.</h4>
+                  <p className="text-[10px] text-slate-450 font-sans leading-relaxed">
+                    Join the waitlist to get notified when new optimization opportunities become available.
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2 max-w-md pt-1">
+                <input
+                  type="email"
+                  placeholder="user@company.com"
+                  disabled
+                  className="bg-slate-950/50 border border-slate-850 text-slate-650 rounded-none px-3 py-1.5 text-[10px] outline-none font-mono flex-grow cursor-not-allowed"
+                />
+                <Link
+                  href="/"
+                  className="bg-slate-900 hover:bg-slate-850 text-white border border-slate-700 font-mono font-bold uppercase tracking-wider text-[9px] px-4 py-2 rounded-none transition-all text-center shrink-0"
+                >
+                  Configure Stack
+                </Link>
+              </div>
+            </div>
+          )}
+
           {/* BENCHMARK MODE PANEL */}
           <div className="bg-slate-950/40 border border-slate-850 p-6 rounded-none text-left relative space-y-3 font-mono">
             <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
             <div className="flex items-center gap-2 text-slate-400 text-[10px] font-bold tracking-widest uppercase">
               <Activity className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-              [ METRIC_BENCHMARK_ANALYSIS ]
+              METRIC BENCHMARK ANALYSIS
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
               <div className="bg-slate-950/80 border border-slate-850/80 p-4 rounded-none">
@@ -313,77 +367,16 @@ export default async function SharedAuditPage({ params }: PageProps) {
             </div>
             <p className="text-[10px] text-slate-450 font-sans leading-relaxed pt-1">
               {spendPerDeveloper > benchmarkAverage ? (
-                <span className="text-amber-400 font-semibold">[OVER_BUDGET]: Your team&apos;s average AI tool spend is higher than similar-sized peer averages by {Math.round((spendPerDeveloper - benchmarkAverage) / benchmarkAverage * 100)}%. Centralizing accounts is highly advised.</span>
+                <span className="text-amber-400 font-semibold">OVER BUDGET: Your team&apos;s average AI tool spend is higher than similar-sized peer averages by {Math.round((spendPerDeveloper - benchmarkAverage) / benchmarkAverage * 100)}%. Centralizing accounts is highly advised.</span>
+              ) : spendPerDeveloper < benchmarkAverage ? (
+                <span className="text-emerald-400 font-semibold">OPTIMAL BUDGET: Outstanding! Your team&apos;s average AI tool spend is optimized and runs lower than peer averages by {Math.round((benchmarkAverage - spendPerDeveloper) / benchmarkAverage * 100)}%.</span>
               ) : (
-                <span className="text-emerald-400 font-semibold">[OPTIMAL_BUDGET]: Outstanding! Your team&apos;s average AI tool spend is optimized and runs lower than peer averages by {Math.round((benchmarkAverage - spendPerDeveloper) / benchmarkAverage * 100)}%.</span>
+                <span className="text-emerald-400 font-semibold">OPTIMAL BUDGET: Well aligned! Your team&apos;s average AI tool spend matches the peer cohort average exactly.</span>
               )}
             </p>
           </div>
 
-          {/* REFERRAL SYSTEM PANEL */}
-          <div className="bg-slate-950/40 border border-slate-850 p-6 rounded-none text-left font-mono relative space-y-3">
-            <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
-            <div className="flex justify-between items-center border-b border-slate-850/80 pb-2.5">
-              <span className="text-[10px] font-bold text-emerald-400 tracking-widest flex items-center gap-2">
-                <Coins className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                [ REFERRAL_ACQUISITION_SYSTEM ]
-              </span>
-              <span className="text-[8px] text-slate-500">REF_CODE: {slug.slice(0, 8).toUpperCase()}-CRD</span>
-            </div>
-            <div className="text-[11px] text-slate-350 leading-relaxed font-sans">
-              Share this audit report or your unique referral link. When another team runs an audit using your code <span className="font-semibold text-emerald-400 font-mono">{slug.slice(0, 8).toUpperCase()}-CRD</span>, <strong>both of you get 30% off</strong> on your first Credex enterprise license integration!
-            </div>
-          </div>
 
-
-          {/* Zero State Optimized */}
-          {results.zeroStateMessage && (
-            <div className="p-6 bg-emerald-950/5 border border-emerald-500/20 rounded-none text-center space-y-2 font-mono relative">
-              <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
-              <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
-              <h3 className="text-xs font-bold text-white uppercase tracking-widest">Optimization level optimal</h3>
-              <p className="text-[10px] text-slate-450 max-w-lg mx-auto font-sans leading-relaxed">{results.zeroStateMessage}</p>
-            </div>
-          )}
-
-          {/* Honest Low Savings State */}
-          {results.monthlySavings <= 50 && results.monthlySavings > 0 && (
-            <div className="p-5 bg-blue-950/5 border border-blue-500/20 rounded-none text-left space-y-2 flex gap-4 items-start font-mono">
-              <div className="p-2 bg-blue-500/10 rounded-none text-blue-400 select-none shrink-0 border border-blue-500/10">
-                <FileText className="w-4 h-4" />
-              </div>
-              <div>
-                <h4 className="text-xs font-bold text-white uppercase tracking-widest">Stack is highly optimized</h4>
-                <p className="text-[10px] text-slate-450 leading-relaxed mt-0.5 font-sans">
-                  The calculations generated minor savings of only ${results.monthlySavings}/mo. We do not advise modifying workspace accounts or disrupting team workflows for negligible financial differences. Keep this setup intact!
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* CREDEX CONDITIONAL BANNER - Displays strictly if savings > $500 */}
-          {results.monthlySavings > 500 && (
-            <div className="bg-emerald-950/5 border border-emerald-500/30 rounded-none p-5 flex flex-col sm:flex-row gap-4 items-center justify-between text-left font-mono relative">
-              <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
-              <div className="flex gap-3 items-center">
-                <div className="p-2.5 bg-emerald-500/10 rounded-none border border-emerald-500/30 text-emerald-400 shrink-0 select-none">
-                  <Coins className="w-4 h-4" />
-                </div>
-                <div className="space-y-0.5">
-                  <h4 className="text-xs font-bold text-white uppercase tracking-widest">Credex bulk integration conversion</h4>
-                  <p className="text-[10px] text-slate-450 font-sans leading-relaxed">
-                    Centralizing active seat registers qualifies your team for up to 30% reduction via bulk enterprise licenses.
-                  </p>
-                </div>
-              </div>
-              <Link
-                href="/"
-                className="bg-emerald-500 hover:bg-emerald-600 text-[#020617] border border-emerald-400 font-mono font-bold uppercase tracking-wider text-[10px] px-4 py-2 rounded-none shadow-md shrink-0 transition-all text-center"
-              >
-                Acquire Credits
-              </Link>
-            </div>
-          )}
 
           {/* Breakdowns strict list */}
           <div className="space-y-4 font-mono">
@@ -419,11 +412,11 @@ export default async function SharedAuditPage({ params }: PageProps) {
                             ? 'bg-red-500/10 text-red-400 border-red-500/20'
                             : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
                         }`}>
-                          {isOptimal ? 'OPTIMAL' : 'REDUN_ALERT'}
+                          {isOptimal ? 'OPTIMAL' : 'REDUNDANT'}
                         </span>
                         
                         <span className="text-[9px] text-slate-400 font-semibold bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-none select-none">
-                          CONF: {Math.round(result.confidence * 100)}%
+                          CONFIDENCE: {Math.round(result.confidence * 100)}%
                         </span>
                       </div>
                     </div>
@@ -472,6 +465,21 @@ export default async function SharedAuditPage({ params }: PageProps) {
                   </div>
                 );
               })}
+            </div>
+          </div>
+
+          {/* REFERRAL SYSTEM PANEL */}
+          <div className="bg-slate-950/40 border border-slate-850 p-6 rounded-none text-left font-mono relative space-y-3">
+            <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
+            <div className="flex justify-between items-center border-b border-slate-850/80 pb-2.5">
+              <span className="text-[10px] font-bold text-emerald-400 tracking-widest flex items-center gap-2">
+                <Coins className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                REFERRAL ACQUISITION SYSTEM
+              </span>
+              <span className="text-[8px] text-slate-500">REF_CODE: {slug.slice(0, 8).toUpperCase()}-CRD</span>
+            </div>
+            <div className="text-[11px] text-slate-350 leading-relaxed font-sans font-medium">
+              Share this audit report or your unique referral link. When another team runs an audit using your code <span className="font-semibold text-emerald-400 font-mono">{slug.slice(0, 8).toUpperCase()}-CRD</span>, <strong>both of you get 30% off</strong> on your first Credex enterprise license integration!
             </div>
           </div>
 
