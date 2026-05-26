@@ -218,7 +218,7 @@ async function generateAiSummary(result: any, teamSize: number, useCase: string)
   const systemInstruction = `You are Credex AI, an elite technical systems auditor. Your task is to analyze the user's SaaS tooling stack and calculations, and write a professional, highly high-density, technical, personalized summary of their optimization report.
 Keep it strictly factual and actionable. Avoid generic fluff, buzzwords, or unnecessary greetings. Target approximately 100 words (or 3-4 concise, high-density sentences).
 Focus on specific tooling redundancies, plan tier misfits, and the exact magnitude of the financial leaks.
-Do NOT use generic sci-fi jargon (e.g., do not say "DECRYPTION STATUS: RAW" or "SECURE ACCESS"). Instead, keep the language authentic, engineering-focused, and highly quantitative.`;
+Do NOT output any markdown headers, bold titles, labels, or title strings (e.g., do NOT start with "SaaS Optimization Report:" or similar). Instead, start directly with the direct, quantitative analytical sentences. Keep the language authentic, engineering-focused, and highly quantitative.`;
 
   const prompt = `Audit Context:
 - Team Size: ${teamSize}
