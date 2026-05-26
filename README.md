@@ -35,6 +35,7 @@ During the sprint build, we made five critical technical trade-offs to balance r
 *   **The Decision:** We declared isolated frontend-specific type interfaces inside `app/page.tsx` and client files instead of sharing and importing them directly from the server-side calculations module `lib/audit/engine.ts`.
 *   **The Rationale:** Direct server imports in Client Components caused Next.js's bundler to attempt compiling server-side Node.js built-ins (`fs` and `path`) for the browser environment, throwing fatal Webpack reference compilation errors. By declaring isolated, decoupled type interfaces for the client view model, we eliminated Webpack browser bundling conflicts, keeping the client bundle compile-safe, lightweight, and completely decoupled from backend modules.
 
+### Live Deployed URL : https://cred-ai-ten.vercel.app/
 ---
 
 ## Setup & Running Locally
@@ -45,9 +46,22 @@ Ensure Node.js is installed on your local environment before running.
 # Install dependencies
 npm install
 
+#Set Up Environment Variables
+copy .env.example .env.local
+
 # Run the development server
 npm run dev
 
 # Run Vitest test suite
 npm test
+
+# Install Vercel CLI (once)
+npm i -g vercel
+
+# Deploy (first time — prompts for project setup)
+vercel
+
+# Deploy to production
+vercel --prod
+
 ```
