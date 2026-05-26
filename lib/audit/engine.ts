@@ -434,6 +434,17 @@ export async function runAudit(input: AuditInput): Promise<AggregateAudit> {
     else if (savings >= 50) severity = 'medium';
     else if (savings > 0) severity = 'low';
 
+    // Adjust confidence score if a pricing discrepancy is detected (e.g. customized negotiated contracts or discounted pricing)
+    let finalConfidence = confidence;
+    if (isDiscrepancy) {
+      finalConfidence = Math.max(0.70, Number((confidence - 0.15).toFixed(2)));
+    }
+
+    let finalRecommendation = savings > 0 ? reason : 'Your stack is fully optimized for this tool. No modifications needed.';
+    if (savings === 0 && isDiscrepancy) {
+      finalRecommendation += ` Note: We detected a pricing discrepancy (your entered spend is $${actualSpend}/mo vs. the official catalog list price of $${expectedSpend}/mo). You may be on a custom negotiated, annual, or bundled tier.`;
+    }
+
     results.push({
       toolId,
       toolName: displayName,
@@ -444,8 +455,8 @@ export async function runAudit(input: AuditInput): Promise<AggregateAudit> {
       annualSavings: savings * 12,
       severity,
       recommendationType: recType,
-      recommendation: savings > 0 ? reason : 'Your stack is fully optimized for this tool. No modifications needed.',
-      confidence,
+      recommendation: finalRecommendation,
+      confidence: finalConfidence,
       capabilityGap: savings > 0 ? capGap : undefined,
       creditFlag,
       creditMessage: creditFlag ? creditMessage : undefined,

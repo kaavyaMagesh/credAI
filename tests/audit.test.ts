@@ -222,5 +222,26 @@ describe('Deterministic Audit Engine', () => {
     expect(result!.savings).toBe(3750);
     expect(result!.recommendation).toContain('Claude Team Standard plan');
   });
+
+  it('should dynamically lower the confidence score and append a warning if a pricing discrepancy is detected', async () => {
+    const input: AuditInput = {
+      teamSize: 1,
+      useCase: 'coding',
+      tools: [
+        { toolId: 'chatgpt', planId: 'plus', seats: 1, enteredMonthlySpend: 17 }, // Plus officially costs $20
+      ],
+    };
+
+    const audit = await runAudit(input);
+
+    const result = audit.results.find(r => r.toolId === 'chatgpt');
+    expect(result).toBeDefined();
+    expect(result!.recommendationType).toBe('optimal');
+    expect(result!.savings).toBe(0);
+    // Standard confidence 0.95 should drop by 0.15 to 0.80 due to the discrepancy
+    expect(result!.confidence).toBe(0.80);
+    expect(result!.recommendation).toContain('pricing discrepancy');
+  });
 });
+
 

@@ -59,6 +59,9 @@ Tests the core business logic engine, checking plan-seat fits, same-vendor downg
   - Asserts that when compliance and SAML SSO requirements are disabled, a small 8-seat team is recommended for a downgrade to standard Team tiers to eliminate pricing overhead.
 * **Test Case 10:** `should recommend consolidating individual high-tier Max plans to professional Team tiers when multiple seats are active`
   - Asserts that holding multiple seats of a high-tier individual Max plan (like Claude Max or Windsurf Max) triggers a downgrade recommendation to professional Team tiers, cutting pricing overhead by 75%+.
+* **Test Case 11:** `should dynamically lower the confidence score and append a warning if a pricing discrepancy is detected`
+  - Asserts that when a user-entered spend rate diverges from standard catalog pricing (e.g. entering $17 for ChatGPT Plus instead of list price $20), the engine dynamically lowers its calculation confidence score to 80% and appends a warning to the recommendation.
+
 
 
 ### 4. `tests/abuse.test.ts`
@@ -75,7 +78,7 @@ Validates security mechanisms, rate limiting behaviors, and bot deflection contr
 
 ## Test Automation Metrics
 - **Test Framework:** Vitest
-- **Total Tests:** 17 active assertions
+- **Total Tests:** 18 active assertions
 - **Coverage Target:** 100% coverage on core pricing parser, audit engine rules, rate limiters, bot traps, and security compliance constraints.
 
 ---
