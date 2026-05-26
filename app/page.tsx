@@ -1200,31 +1200,6 @@ function HomeContent() {
                 </p>
               </div>
 
-              {/* Dynamic Shareable Link Card */}
-              {savedSlug && (
-                <div className="bg-slate-950/40 border border-slate-800 p-5 rounded-none flex flex-col sm:flex-row gap-4 items-center justify-between text-left font-mono relative">
-                  <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
-                  <div className="space-y-1">
-                    <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5 font-mono">
-                      <Share2 className="w-3.5 h-3.5 text-emerald-400" />
-                      Dynamic shared URL
-                    </h4>
-                    <p className="text-[10px] text-slate-500 font-sans leading-relaxed">
-                      Share this static dashboard. Personally identifiable information is fully omitted from the output.
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-2 bg-slate-950 border border-slate-850 p-1.5 rounded-none w-full sm:w-auto">
-                    <span className="text-[10px] font-mono text-slate-400 truncate max-w-xs px-2 select-all">
-                      {origin}/audit/{savedSlug}
-                    </span>
-                    <CopyButton textToCopy={`${origin}/audit/${savedSlug}`} />
-                  </div>
-                </div>
-              )}
-
-
-
               {/* Breakdowns strict list */}
               <div className="space-y-4 font-mono">
                 <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-800 pb-2">
@@ -1314,6 +1289,29 @@ function HomeContent() {
                   })}
                 </div>
               </div>
+
+              {/* Dynamic Shareable Link Card */}
+              {savedSlug && (
+                <div className="bg-slate-950/40 border border-slate-800 p-5 rounded-none flex flex-col sm:flex-row gap-4 items-center justify-between text-left font-mono relative">
+                  <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
+                  <div className="space-y-1">
+                    <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5 font-mono">
+                      <Share2 className="w-3.5 h-3.5 text-emerald-400" />
+                      Dynamic shared URL
+                    </h4>
+                    <p className="text-[10px] text-slate-500 font-sans leading-relaxed">
+                      Share this static dashboard. Personally identifiable information is fully omitted from the output.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 bg-slate-950 border border-slate-850 p-1.5 rounded-none w-full sm:w-auto">
+                    <span className="text-[10px] font-mono text-slate-400 truncate max-w-xs px-2 select-all">
+                      {origin}/audit/{savedSlug}
+                    </span>
+                    <CopyButton textToCopy={`${origin}/audit/${savedSlug}`} />
+                  </div>
+                </div>
+              )}
 
               {/* REFERRAL SYSTEM PANEL */}
               {savedSlug && (
