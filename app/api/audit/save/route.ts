@@ -79,6 +79,15 @@ export async function POST(request: Request) {
     // 2. Try saving to Supabase (Graceful fallback if keys are missing or database is down)
     let saved = false;
     let slug = 'mock-demo-slug';
+    try {
+      if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        slug = crypto.randomUUID();
+      } else {
+        slug = Math.random().toString(36).substring(2, 15) + '-' + Math.random().toString(36).substring(2, 15);
+      }
+    } catch (e) {
+      slug = 'mock-demo-slug';
+    }
     let errorMessage = '';
 
     const hasSupabaseCreds = 
@@ -139,7 +148,11 @@ export async function POST(request: Request) {
     if (email) {
       if (process.env.RESEND_API_KEY) {
         try {
-          const emailResponse = await sendTransactionalEmail(email, companyName, calculatedResult, slug);
+          const host = request.headers.get('host') || 'localhost:3000';
+          const protocol = request.headers.get('x-forwarded-proto') || 'http';
+          const appUrl = process.env.NEXT_PUBLIC_APP_URL || `${protocol}://${host}`;
+
+          const emailResponse = await sendTransactionalEmail(email, companyName, calculatedResult, slug, appUrl);
           if (!emailResponse.ok) {
             const errText = await emailResponse.text();
             console.error(`Resend API returned status ${emailResponse.status}: ${errText}`);
@@ -253,11 +266,11 @@ Provide a ~100-word quantitative synthesis report detailing:
 
 
 // Helper to send transactional emails via Resend REST API
-async function sendTransactionalEmail(email: string, companyName: string | null, result: any, slug: string) {
+async function sendTransactionalEmail(email: string, companyName: string | null, result: any, slug: string, appUrl: string) {
   const apiKey = process.env.RESEND_API_KEY;
   const isHighSavings = result.monthlySavings > 100; // threshold for high savings
   
-  const reportUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/audit/${slug}`;
+  const reportUrl = `${appUrl}/audit/${slug}`;
   const fromEmail = 'onboarding@resend.dev'; // Resend Sandbox sender
   
   const htmlContent = `

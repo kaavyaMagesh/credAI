@@ -12,11 +12,14 @@ import {
   Activity,
   Cpu,
   Layers,
-  Sliders
+  Sliders,
+  Share2
 } from 'lucide-react';
 import { supabase } from '@/lib/db/supabase';
 import { Severity } from '@/lib/audit/engine';
 import ExportPdfButton from '../../../components/ExportPdfButton';
+import CopyButton from '../../../components/CopyButton';
+import { headers } from 'next/headers';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -60,6 +63,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const title = `AI Stack Audit Report — Save $${savingsAmount.toLocaleString()}/year`;
   const description = `This public shared AI stack audit identifies up to $${savingsAmount.toLocaleString()}/year in recurring software optimization savings. View the detailed report here.`;
 
+  const headersList = await headers();
+  const host = headersList.get('host') || 'localhost:3000';
+  const protocol = headersList.get('x-forwarded-proto') || 'http';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || `${protocol}://${host}`;
+
   return {
     title,
     description,
@@ -67,7 +75,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title,
       description,
       type: 'website',
-      url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/audit/${slug}`,
+      url: `${appUrl}/audit/${slug}`,
       siteName: 'credAI Stack Auditor',
     },
     twitter: {
@@ -125,6 +133,11 @@ const DEMO_AUDIT_RESULT = {
 export default async function SharedAuditPage({ params }: PageProps) {
   const { slug } = await params;
   
+  const headersList = await headers();
+  const host = headersList.get('host') || 'localhost:3000';
+  const protocol = headersList.get('x-forwarded-proto') || 'http';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || `${protocol}://${host}`;
+  
   let auditData: any = null;
   let isDemo = slug === 'mock-demo-slug';
   let errorState = false;
@@ -141,14 +154,16 @@ export default async function SharedAuditPage({ params }: PageProps) {
         .single();
 
       if (error || !data) {
-        console.error(`Dynamic shared fetch failed for slug ${slug}:`, error);
-        errorState = true;
+        console.warn(`Dynamic shared fetch failed for slug ${slug} (database may be offline or unconfigured). Gracefully falling back to demo state. Details:`, error);
+        auditData = DEMO_AUDIT_RESULT;
+        isDemo = true;
       } else {
         auditData = data;
       }
     } catch (e) {
-      console.error('Fetch error:', e);
-      errorState = true;
+      console.warn(`Database connection threw an error during fetch for ${slug}. Gracefully falling back to demo state. Details:`, e);
+      auditData = DEMO_AUDIT_RESULT;
+      isDemo = true;
     }
   }
 
@@ -294,60 +309,6 @@ export default async function SharedAuditPage({ params }: PageProps) {
             </div>
           )}
 
-          {/* CREDEX CONDITIONAL BANNER OR LOW-SAVINGS HONESTY BANNER */}
-          {results.monthlySavings > 500 ? (
-            <div className="bg-emerald-950/5 border border-emerald-500/30 rounded-none p-6 flex flex-col sm:flex-row gap-5 items-center justify-between text-left font-mono relative">
-              <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
-              <div className="flex gap-3.5 items-start">
-                <div className="p-2.5 bg-emerald-500/10 rounded-none border border-emerald-500/30 text-emerald-400 shrink-0 select-none">
-                  <Coins className="w-4 h-4" />
-                </div>
-                <div className="space-y-1">
-                  <h4 className="text-xs font-bold text-white uppercase tracking-widest font-mono">You may qualify for discounted enterprise AI credits.</h4>
-                  <p className="text-[10px] text-slate-450 font-sans leading-relaxed">
-                    Teams with similar usage patterns reduced spend further through Credex marketplace pricing.
-                  </p>
-                </div>
-              </div>
-              <Link 
-                href="https://calendly.com/credex-audit/escalation"
-                target="_blank"
-                className="bg-emerald-500 hover:bg-emerald-600 text-[#020617] border border-emerald-400 font-mono font-bold uppercase tracking-wider text-[10px] px-5 py-2.5 rounded-none shadow-md shrink-0 transition-all text-center whitespace-nowrap"
-              >
-                Book Free Consultation
-              </Link>
-            </div>
-          ) : (
-            <div className="p-6 bg-slate-950/40 border border-slate-850 rounded-none text-left space-y-4 font-mono relative">
-              <div className="absolute top-0 left-0 w-2 h-[1px] bg-slate-550" />
-              <div className="flex gap-3.5 items-start">
-                <div className="p-2.5 bg-slate-900 rounded-none border border-slate-800 text-slate-400 shrink-0 select-none">
-                  <CheckCircle2 className="w-4 h-4" />
-                </div>
-                <div className="space-y-1">
-                  <h4 className="text-xs font-bold text-white uppercase tracking-widest font-mono">Your stack already appears reasonably optimized.</h4>
-                  <p className="text-[10px] text-slate-450 font-sans leading-relaxed">
-                    Join the waitlist to get notified when new optimization opportunities become available.
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-2 max-w-md pt-1">
-                <input
-                  type="email"
-                  placeholder="user@company.com"
-                  disabled
-                  className="bg-slate-950/50 border border-slate-850 text-slate-650 rounded-none px-3 py-1.5 text-[10px] outline-none font-mono flex-grow cursor-not-allowed"
-                />
-                <Link
-                  href="/"
-                  className="bg-slate-900 hover:bg-slate-850 text-white border border-slate-700 font-mono font-bold uppercase tracking-wider text-[9px] px-4 py-2 rounded-none transition-all text-center shrink-0"
-                >
-                  Configure Stack
-                </Link>
-              </div>
-            </div>
-          )}
-
           {/* BENCHMARK MODE PANEL */}
           <div className="bg-slate-950/40 border border-slate-850 p-6 rounded-none text-left relative space-y-3 font-mono">
             <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
@@ -374,6 +335,27 @@ export default async function SharedAuditPage({ params }: PageProps) {
                 <span className="text-emerald-400 font-semibold">OPTIMAL BUDGET: Well aligned! Your team&apos;s average AI tool spend matches the peer cohort average exactly.</span>
               )}
             </p>
+          </div>
+
+          {/* Dynamic Shareable Link Card */}
+          <div className="bg-slate-950/40 border border-slate-805 p-5 rounded-none flex flex-col sm:flex-row gap-4 items-center justify-between text-left font-mono relative">
+            <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
+            <div className="space-y-1">
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5 font-mono">
+                <Share2 className="w-3.5 h-3.5 text-emerald-400" />
+                Dynamic shared URL
+              </h4>
+              <p className="text-[10px] text-slate-500 font-sans leading-relaxed">
+                Share this static dashboard. Personally identifiable information is fully omitted from the output.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 bg-slate-950 border border-slate-850 p-1.5 rounded-none w-full sm:w-auto">
+              <span className="text-[10px] font-mono text-slate-400 truncate max-w-xs px-2 select-all font-semibold">
+                {appUrl}/audit/{slug}
+              </span>
+              <CopyButton textToCopy={`${appUrl}/audit/${slug}`} />
+            </div>
           </div>
 
 
@@ -467,9 +449,8 @@ export default async function SharedAuditPage({ params }: PageProps) {
               })}
             </div>
           </div>
-
           {/* REFERRAL SYSTEM PANEL */}
-          <div className="bg-slate-950/40 border border-slate-850 p-6 rounded-none text-left font-mono relative space-y-3">
+          <div className="bg-slate-950/40 border border-slate-850 p-6 rounded-none text-left font-mono relative space-y-4">
             <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
             <div className="flex justify-between items-center border-b border-slate-850/80 pb-2.5">
               <span className="text-[10px] font-bold text-emerald-400 tracking-widest flex items-center gap-2">
@@ -478,10 +459,76 @@ export default async function SharedAuditPage({ params }: PageProps) {
               </span>
               <span className="text-[8px] text-slate-500">REF_CODE: {slug.slice(0, 8).toUpperCase()}-CRD</span>
             </div>
-            <div className="text-[11px] text-slate-350 leading-relaxed font-sans font-medium">
-              Share this audit report or your unique referral link: <span className="text-emerald-400 font-mono underline select-all">{process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/?ref={slug.slice(0, 8).toUpperCase()}-CRD</span>. When another team runs an audit using your code <span className="font-semibold text-emerald-400 font-mono">{slug.slice(0, 8).toUpperCase()}-CRD</span>, <strong>both of you get 30% off</strong> on your first Credex enterprise license integration!
+            
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-950/45 border border-slate-850 p-4 rounded-none font-sans">
+              <div className="space-y-1 text-left">
+                <p className="text-[11px] text-slate-350 font-medium leading-relaxed">
+                  When another team runs an audit using your referral code <span className="font-semibold text-emerald-400 font-mono">{slug.slice(0, 8).toUpperCase()}-CRD</span>, <strong>both of you get 30% off</strong> on your first Credex enterprise license!
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 bg-slate-950 border border-slate-850 p-1.5 rounded-none w-full sm:w-auto font-mono shrink-0">
+                <span className="text-[10px] text-slate-400 truncate max-w-xs px-2 select-all font-semibold">
+                  {appUrl}/?ref={slug.slice(0, 8).toUpperCase()}-CRD
+                </span>
+                <CopyButton textToCopy={`${appUrl}/?ref=${slug.slice(0, 8).toUpperCase()}-CRD`} />
+              </div>
             </div>
           </div>
+
+          {/* CREDEX CONDITIONAL BANNER OR LOW-SAVINGS HONESTY BANNER */}
+          {results.monthlySavings > 500 ? (
+            <div className="bg-emerald-950/5 border border-emerald-500/30 rounded-none p-6 flex flex-col sm:flex-row gap-5 items-center justify-between text-left font-mono relative">
+              <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
+              <div className="flex gap-3.5 items-start">
+                <div className="p-2.5 bg-emerald-500/10 rounded-none border border-emerald-500/30 text-emerald-400 shrink-0 select-none">
+                  <Coins className="w-4 h-4" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-xs font-bold text-white uppercase tracking-widest font-mono">You may qualify for discounted enterprise AI credits.</h4>
+                  <p className="text-[10px] text-slate-450 font-sans leading-relaxed">
+                    Teams with similar usage patterns reduced spend further through Credex marketplace pricing.
+                  </p>
+                </div>
+              </div>
+              <Link 
+                href="https://calendly.com/credex-audit/escalation"
+                target="_blank"
+                className="bg-emerald-500 hover:bg-emerald-600 text-[#020617] border border-emerald-400 font-mono font-bold uppercase tracking-wider text-[10px] px-5 py-2.5 rounded-none shadow-md shrink-0 transition-all text-center whitespace-nowrap animate-pulse"
+              >
+                Book Free Consultation
+              </Link>
+            </div>
+          ) : (
+            <div className="p-6 bg-slate-950/40 border border-slate-850 rounded-none text-left space-y-4 font-mono relative">
+              <div className="absolute top-0 left-0 w-2 h-[1px] bg-slate-550" />
+              <div className="flex gap-3.5 items-start">
+                <div className="p-2.5 bg-slate-900 rounded-none border border-slate-800 text-slate-400 shrink-0 select-none">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-xs font-bold text-white uppercase tracking-widest font-mono">Your stack already appears reasonably optimized.</h4>
+                  <p className="text-[10px] text-slate-450 font-sans leading-relaxed">
+                    Join the waitlist to get notified when new optimization opportunities become available.
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2 max-w-md pt-1">
+                <input
+                  type="email"
+                  placeholder="user@company.com"
+                  disabled
+                  className="bg-slate-950/50 border border-slate-850 text-slate-650 rounded-none px-3 py-1.5 text-[10px] outline-none font-mono flex-grow cursor-not-allowed"
+                />
+                <Link
+                  href="/"
+                  className="bg-slate-900 hover:bg-slate-850 text-white border border-slate-700 font-mono font-bold uppercase tracking-wider text-[9px] px-4 py-2 rounded-none transition-all text-center shrink-0"
+                >
+                  Configure Stack
+                </Link>
+              </div>
+            </div>
+          )}
 
           {/* Action Link Panel */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-6 border-t border-slate-800 font-mono">
