@@ -477,32 +477,6 @@ export default async function SharedAuditPage({ params }: PageProps) {
               })}
             </div>
           </div>
-          {/* REFERRAL SYSTEM PANEL */}
-          <div className="bg-slate-950/40 border border-slate-850 p-6 rounded-none text-left font-mono relative space-y-4">
-            <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
-            <div className="flex justify-between items-center border-b border-slate-850/80 pb-2.5">
-              <span className="text-[10px] font-bold text-emerald-400 tracking-widest flex items-center gap-2">
-                <Coins className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                REFERRAL ACQUISITION SYSTEM
-              </span>
-              <span className="text-[8px] text-slate-500">REF_CODE: {slug.slice(0, 8).toUpperCase()}-CRD</span>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-950/45 border border-slate-850 p-4 rounded-none font-sans">
-              <div className="space-y-1 text-left">
-                <p className="text-[11px] text-slate-350 font-medium leading-relaxed">
-                  When another team runs an audit using your referral code <span className="font-semibold text-emerald-400 font-mono">{slug.slice(0, 8).toUpperCase()}-CRD</span>, <strong>both of you get 30% off</strong> on your first Credex enterprise license!
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2 bg-slate-950 border border-slate-850 p-1.5 rounded-none w-full sm:w-auto font-mono shrink-0">
-                <span className="text-[10px] text-slate-400 truncate max-w-xs px-2 select-all font-semibold">
-                  {appUrl}/?ref={slug.slice(0, 8).toUpperCase()}-CRD
-                </span>
-                <CopyButton textToCopy={`${appUrl}/?ref=${slug.slice(0, 8).toUpperCase()}-CRD`} />
-              </div>
-            </div>
-          </div>
 
           {/* CREDEX CONDITIONAL BANNER OR LOW-SAVINGS HONESTY BANNER */}
           {results.monthlySavings > 500 ? (
@@ -557,6 +531,33 @@ export default async function SharedAuditPage({ params }: PageProps) {
               </div>
             </div>
           )}
+          {/* REFERRAL SYSTEM PANEL */}
+          <div className="bg-slate-950/40 border border-slate-850 p-6 rounded-none text-left font-mono relative space-y-4">
+            <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
+            <div className="flex justify-between items-center border-b border-slate-850/80 pb-2.5">
+              <span className="text-[10px] font-bold text-emerald-400 tracking-widest flex items-center gap-2">
+                <Coins className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                REFERRAL ACQUISITION SYSTEM
+              </span>
+              <span className="text-[8px] text-slate-500">REF_CODE: {slug.slice(0, 8).toUpperCase()}-CRD</span>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-950/45 border border-slate-850 p-4 rounded-none font-sans">
+              <div className="space-y-1 text-left">
+                <p className="text-[11px] text-slate-350 font-medium leading-relaxed">
+                  When another team runs an audit using your referral code <span className="font-semibold text-emerald-400 font-mono">{slug.slice(0, 8).toUpperCase()}-CRD</span>, <strong>both of you get 30% off</strong> on your first Credex enterprise license!
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 bg-slate-950 border border-slate-850 p-1.5 rounded-none w-full sm:w-auto font-mono shrink-0">
+                <span className="text-[10px] text-slate-400 truncate max-w-xs px-2 select-all font-semibold">
+                  {appUrl}/?ref={slug.slice(0, 8).toUpperCase()}-CRD
+                </span>
+                <CopyButton textToCopy={`${appUrl}/?ref=${slug.slice(0, 8).toUpperCase()}-CRD`} />
+              </div>
+            </div>
+          </div>
+
 
           {/* Action Link Panel */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-6 border-t border-slate-800 font-mono">
