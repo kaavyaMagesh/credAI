@@ -1267,9 +1267,18 @@ function HomeContent() {
                         {(result.creditFlag || (result.capabilityGap && result.capabilityGap.length > 0)) && (
                           <div className="p-3 bg-slate-950 border border-slate-850 rounded-none space-y-2 text-[10px] font-mono leading-relaxed">
                             {result.creditFlag && (
-                              <div className="flex gap-2 items-start">
-                                <Coins className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                                <p className="text-slate-400 font-medium">{result.creditMessage}</p>
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-1">
+                                <div className="flex gap-2 items-start text-left">
+                                  <Coins className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                                  <p className="text-slate-400 font-medium">{result.creditMessage}</p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => setIsConsultModalOpen(true)}
+                                  className="bg-emerald-500 hover:bg-emerald-600 text-[#020617] border border-emerald-400 font-mono font-bold uppercase tracking-wider text-[9px] px-3 py-1 rounded-none shadow-sm transition-all cursor-pointer whitespace-nowrap shrink-0 sm:self-center"
+                                >
+                                  Get In Touch
+                                </button>
                               </div>
                             )}
 
