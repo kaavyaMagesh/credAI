@@ -1244,7 +1244,7 @@ function HomeContent() {
                   {spendPerDeveloper > benchmarkAverage ? (
                     <span className="text-amber-400 font-semibold">OVER BUDGET: Your team&apos;s average AI tool spend is higher than similar-sized peer averages by {Math.round((spendPerDeveloper - benchmarkAverage) / benchmarkAverage * 100)}%. Centralizing accounts is highly advised.</span>
                   ) : spendPerDeveloper < benchmarkAverage ? (
-                    <span className="text-emerald-400 font-semibold">OPTIMAL BUDGET: Outstanding! Your team&apos;s average AI tool spend is optimized and runs lower than peer averages by {Math.round((benchmarkAverage - spendPerDeveloper) / benchmarkAverage * 100)}%.</span>
+                    <span className="text-emerald-400 font-semibold">OPTIMAL BUDGET: Your team&apos;s average AI tool spend is optimized and runs lower than peer averages by {Math.round((benchmarkAverage - spendPerDeveloper) / benchmarkAverage * 100)}%.</span>
                   ) : (
                     <span className="text-emerald-400 font-semibold">OPTIMAL BUDGET: Well aligned! Your team&apos;s average AI tool spend matches the peer cohort average exactly.</span>
                   )}

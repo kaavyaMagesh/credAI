@@ -283,9 +283,8 @@ export default async function SharedAuditPage({ params }: PageProps) {
                   SEVERITY LEVEL: {results.overallSeverity}
                 </span>
               </div>
-
               <h2 className="text-xl font-bold text-white uppercase tracking-wider font-mono">
-                AI Stack Performance
+                Audit Stack Performance
               </h2>
               <p className="text-[11px] text-slate-400 font-sans">
                 Computed metrics for a workspace of <span className="font-semibold text-slate-200 font-mono">{auditData.team_size}</span> seats on a <span className="font-semibold text-slate-200 font-mono uppercase text-[10px] tracking-wider">{auditData.use_case}</span> workload.
@@ -294,7 +293,7 @@ export default async function SharedAuditPage({ params }: PageProps) {
 
             <div className="flex gap-4 shrink-0 font-mono w-full sm:w-auto pt-4 md:pt-0">
               <div className="text-center bg-slate-950 border border-slate-850 p-4 rounded-none shrink-0 w-28 sm:w-32">
-                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Monthly savings</p>
+                <p className="text-[9px] font-bold text-slate-550 uppercase tracking-widest">Monthly savings</p>
                 <p className="text-xl sm:text-2xl font-bold text-emerald-400 mt-1">${results.monthlySavings}</p>
               </div>
 
@@ -349,7 +348,7 @@ export default async function SharedAuditPage({ params }: PageProps) {
               {spendPerDeveloper > benchmarkAverage ? (
                 <span className="text-amber-400 font-semibold">OVER BUDGET: Your team&apos;s average AI tool spend is higher than similar-sized peer averages by {Math.round((spendPerDeveloper - benchmarkAverage) / benchmarkAverage * 100)}%. Centralizing accounts is highly advised.</span>
               ) : spendPerDeveloper < benchmarkAverage ? (
-                <span className="text-emerald-400 font-semibold">OPTIMAL BUDGET: Outstanding! Your team&apos;s average AI tool spend is optimized and runs lower than peer averages by {Math.round((benchmarkAverage - spendPerDeveloper) / benchmarkAverage * 100)}%.</span>
+                <span className="text-emerald-400 font-semibold">OPTIMAL BUDGET: Your team&apos;s average AI tool spend is optimized and runs lower than peer averages by {Math.round((benchmarkAverage - spendPerDeveloper) / benchmarkAverage * 100)}%.</span>
               ) : (
                 <span className="text-emerald-400 font-semibold">OPTIMAL BUDGET: Well aligned! Your team&apos;s average AI tool spend matches the peer cohort average exactly.</span>
               )}
