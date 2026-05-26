@@ -157,4 +157,47 @@ describe('Deterministic Audit Engine', () => {
     expect(openaiApiResult!.optimizedSpend).toBe(210);
     expect(openaiApiResult!.recommendation).toContain('standardizing high-throughput, non-reasoning agent requests on Gemini Flash API');
   });
+
+  it('should preserve enterprise plan if compliance, HIPAA or SAML SSO requirements are active', async () => {
+    const input: AuditInput = {
+      teamSize: 8,
+      useCase: 'mixed',
+      hasComplianceNeeds: true,
+      requiresSSO: true,
+      tools: [
+        { toolId: 'chatgpt', planId: 'enterprise', seats: 8, enteredMonthlySpend: 480 },
+      ],
+    };
+
+    const audit = await runAudit(input);
+    
+    // With compliance/SSO needs active, the small-team downgrade is bypassed.
+    const result = audit.results.find(r => r.toolId === 'chatgpt');
+    expect(result).toBeDefined();
+    expect(result!.recommendationType).toBe('optimal');
+    expect(result!.savings).toBe(0);
+    expect(result!.optimizedSpend).toBe(480);
+  });
+
+  it('should recommend downgrading enterprise plans if team size is small and compliance needs are absent', async () => {
+    const input: AuditInput = {
+      teamSize: 8,
+      useCase: 'mixed',
+      hasComplianceNeeds: false,
+      requiresSSO: false,
+      tools: [
+        { toolId: 'chatgpt', planId: 'enterprise', seats: 8, enteredMonthlySpend: 480 },
+      ],
+    };
+
+    const audit = await runAudit(input);
+    
+    // Without compliance/SSO, the small-team should be downgraded to Team ($23.45/mo per seat).
+    // Spend = 8 * 23.45 = $187.60 -> rounded/truncated to $188 or close
+    const result = audit.results.find(r => r.toolId === 'chatgpt');
+    expect(result).toBeDefined();
+    expect(result!.recommendationType).toBe('downgrade');
+    expect(result!.optimizedSpend).toBeCloseTo(187.60, 1);
+    expect(result!.savings).toBeGreaterThan(0);
+  });
 });

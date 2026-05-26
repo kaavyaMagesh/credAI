@@ -53,6 +53,10 @@ Tests the core business logic engine, checking plan-seat fits, same-vendor downg
   - Asserts that holding both premium chat assistants triggers Gemini consolidation to save money while retaining Claude Pro.
 * **Test Case 7:** `should detect OpenAI API + Gemini API overlap and recommend standardizing non-reasoning agent requests on Gemini API`
   - Asserts standardizing high-throughput API agent workloads on cheaper Gemini API endpoints while retaining OpenAI for critical items.
+* **Test Case 8:** `should preserve enterprise plan if compliance, HIPAA or SAML SSO requirements are active`
+  - Asserts that when a small 8-seat team is on an Enterprise plan but has compliance or SAML SSO requirements active, the optimizer preserves the premium plan (yielding $0 savings) to satisfy security overhead.
+* **Test Case 9:** `should recommend downgrading enterprise plans if team size is small and compliance needs are absent`
+  - Asserts that when compliance and SAML SSO requirements are disabled, a small 8-seat team is recommended for a downgrade to standard Team tiers to eliminate pricing overhead.
 
 ### 4. `tests/abuse.test.ts`
 Validates security mechanisms, rate limiting behaviors, and bot deflection controls.
@@ -68,8 +72,8 @@ Validates security mechanisms, rate limiting behaviors, and bot deflection contr
 
 ## Test Automation Metrics
 - **Test Framework:** Vitest
-- **Total Tests:** 14 active assertions
-- **Coverage Target:** 100% coverage on core pricing parser, audit engine rules, rate limiters, and bot traps.
+- **Total Tests:** 16 active assertions
+- **Coverage Target:** 100% coverage on core pricing parser, audit engine rules, rate limiters, bot traps, and security compliance constraints.
 
 ---
 
