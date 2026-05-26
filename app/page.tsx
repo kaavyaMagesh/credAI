@@ -695,7 +695,6 @@ function HomeContent() {
                 key={i}
                 disabled={i > 3 && !auditResult}
                 onClick={() => {
-                  setShowLeadCapture(false);
                   setStep(i);
                 }}
                 className={`p-4 border-r border-slate-800 last:border-r-0 flex flex-col gap-1 transition-all relative ${
