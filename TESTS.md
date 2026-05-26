@@ -57,6 +57,9 @@ Tests the core business logic engine, checking plan-seat fits, same-vendor downg
   - Asserts that when a small 8-seat team is on an Enterprise plan but has compliance or SAML SSO requirements active, the optimizer preserves the premium plan (yielding $0 savings) to satisfy security overhead.
 * **Test Case 9:** `should recommend downgrading enterprise plans if team size is small and compliance needs are absent`
   - Asserts that when compliance and SAML SSO requirements are disabled, a small 8-seat team is recommended for a downgrade to standard Team tiers to eliminate pricing overhead.
+* **Test Case 10:** `should recommend consolidating individual high-tier Max plans to professional Team tiers when multiple seats are active`
+  - Asserts that holding multiple seats of a high-tier individual Max plan (like Claude Max or Windsurf Max) triggers a downgrade recommendation to professional Team tiers, cutting pricing overhead by 75%+.
+
 
 ### 4. `tests/abuse.test.ts`
 Validates security mechanisms, rate limiting behaviors, and bot deflection controls.
@@ -72,7 +75,7 @@ Validates security mechanisms, rate limiting behaviors, and bot deflection contr
 
 ## Test Automation Metrics
 - **Test Framework:** Vitest
-- **Total Tests:** 16 active assertions
+- **Total Tests:** 17 active assertions
 - **Coverage Target:** 100% coverage on core pricing parser, audit engine rules, rate limiters, bot traps, and security compliance constraints.
 
 ---

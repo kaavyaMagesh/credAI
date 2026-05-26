@@ -200,4 +200,27 @@ describe('Deterministic Audit Engine', () => {
     expect(result!.optimizedSpend).toBeCloseTo(187.60, 1);
     expect(result!.savings).toBeGreaterThan(0);
   });
+
+  it('should recommend consolidating individual high-tier Max plans to professional Team tiers when multiple seats are active', async () => {
+    const input: AuditInput = {
+      teamSize: 50,
+      useCase: 'coding',
+      tools: [
+        { toolId: 'claude', planId: 'max', seats: 50, enteredMonthlySpend: 5000 },
+      ],
+    };
+
+    const audit = await runAudit(input);
+
+    const result = audit.results.find(r => r.toolId === 'claude');
+    expect(result).toBeDefined();
+    expect(result!.recommendationType).toBe('downgrade');
+    // Claude Max ($100/seat) to Claude Team Standard ($25/seat)
+    // Spend = 50 * 25 = $1250
+    // Savings = 5000 - 1250 = $3750
+    expect(result!.optimizedSpend).toBe(1250);
+    expect(result!.savings).toBe(3750);
+    expect(result!.recommendation).toContain('Claude Team Standard plan');
+  });
 });
+

@@ -268,8 +268,27 @@ export async function runAudit(input: AuditInput): Promise<AggregateAudit> {
       confidence = 0.92;
     }
     
+    // 2B. High-tier individual Max plans with multiple seats (e.g. Claude Max, Windsurf Max)
+    else if (seats > 1 && planId.toLowerCase() === 'max') {
+      if (toolId === 'claude') {
+        recType = 'downgrade';
+        actionType = 'downgrade';
+        targetPlanName = 'Team Standard';
+        optimizedSpend = 25 * seats;
+        reason = `Deploying individual high-tier Max licenses ($100/mo) for a team of ${seats} is highly inefficient. Standardizing on the Claude Team Standard plan ($25/mo per seat) retains advanced team features while cutting spend by 75%.`;
+        confidence = 0.95;
+      } else if (toolId === 'windsurf') {
+        recType = 'downgrade';
+        actionType = 'downgrade';
+        targetPlanName = 'Teams';
+        optimizedSpend = 40 * seats;
+        reason = `Deploying individual high-tier Max licenses ($200/mo) for a team of ${seats} is highly inefficient. Standardizing on the Windsurf Teams plan ($40/mo per seat) retains team features while cutting spend by 80%.`;
+        confidence = 0.95;
+      }
+    }
+    
     // 3. Large teams on Individual plans (Operational security check - no savings but high administrative recommendation)
-    else if (seats > 50 && ['plus', 'pro', 'pro+', 'individual'].includes(planId.toLowerCase())) {
+    else if (seats >= 20 && ['plus', 'pro', 'pro+', 'individual'].includes(planId.toLowerCase())) {
       recType = 'optimal'; // Not a spend saving but operational improvement
       actionType = 'upgrade_recommendation';
       
