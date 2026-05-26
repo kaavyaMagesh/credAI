@@ -133,7 +133,8 @@ Completed and integrated the full B2B viral referral acquisition loop:
 Designing clean numeric inputs in React requires distinguishing between active user typing states (which must allow temporary empty values) and final display states (which clamp on blur). To maintain strict type safety, these empty values must be safely sanitized before performing any mathematical calculations or logical operations. Closing the loop on viral SaaS systems requires coordinating URL query readers on application entry with dynamic path generation at exit. Additionally, gating value delivery late in the funnel creates a high-trust onboarding experience that captures high-intent leads.
 
 **Blockers / what I'm stuck on:**  
-None. All components compile beautifully, all features are fully integrated, and database columns are synchronized. 
+1. **Gemini Chain-of-Thought Token Cutoff**: The Gemini 2.5 Flash API initially truncated generated summaries (sometimes outputting just a title) because the default `maxOutputTokens` was capped at `250`. Since the model's Chain-of-Thought (thinking) counts against the output limit, it spent almost the entire budget on internal reasoning before returning text. We resolved this by raising the cap to `2048`, giving the model ample runway to complete full quantitative summaries.
+2. **Disconnected Compliance Context**: The B2B compliance options were parsed by the engine but omitted from the summary pipelines, leading to summaries that proposed downgrading compliance-dependent enterprise tiers. We resolved this by passing these compliance variables into the Gemini prompt and the fallback compiler, enabling the AI to explicitly and intelligently justify preserved enterprise configurations to users. 
 
 **Plan for tomorrow:**  
 None! All deliverables have been completed successfully. The application is production-ready.
