@@ -7,7 +7,7 @@ import { generateFallbackSummary } from '../../../../lib/audit/fallback';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { teamSize, useCase, tools, email, companyName, role, hasComplianceNeeds, requiresHIPAA, requiresSSO, website } = body;
+    const { teamSize, useCase, tools, email, companyName, role, hasComplianceNeeds, requiresHIPAA, requiresSSO, website, referralCode } = body;
 
     // 1A. Honeypot check: Bots auto-fill 'website'. Real humans do not.
     if (website) {
@@ -116,7 +116,8 @@ export async function POST(request: Request) {
                 company_name: companyName || null,
                 role: role || null,
                 team_size: teamSize,
-                audit_id: slug
+                audit_id: slug,
+                referral_code: referralCode || null
               });
 
             if (leadError) {

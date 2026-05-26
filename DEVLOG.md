@@ -104,3 +104,26 @@ Next.js client-side search parameter parsing using `useSearchParams` must be enc
 **Plan for tomorrow:**  
 Finalize live public Vercel deployment, verify dynamic UUID routing in production, complete manual mobile Lighthouse audits, and submit all internship deliverables.
 
+## Day 7 — 2026-05-26
+
+**Hours worked:** 8
+
+**What I did:**  
+Optimized the team size, seat counts, and actual monthly spend inputs across the entire wizard and consultation modal by implementing seamless digit deletion. Inputs can now be cleared fully (setting them temporarily to `""` to prevent backspace locks) and are gracefully clamped to their minimum default values (`1` or `0`) on field blur (`onBlur`).
+Resolved all 7 TypeScript type checking errors in `app/page.tsx` that were introduced by allowing empty string states in standard numeric fields. Safeguarded all mathematical calculations (multiplication, division, and inequalities) with robust local inline numeric conversion filters. Executed `npx tsc --noEmit` and confirmed that the type-checker succeeds with absolutely zero compilation errors or warnings.
+Completed and integrated the full B2B viral referral acquisition loop:
+1. Created client-side state for `referralCode`, persisting it across page reloads in `localStorage`.
+2. Programmed URL search parameter parsing (`?ref=XXXXXX-CRD` or `?referral=...`) to automatically extract, capitalize, and pre-populate referral codes for new users.
+3. Designed and styled a custom **Referral / Promo Code (Optional)** input field inside the **Unlock Stack Report** lead capture form.
+4. Updated the API payload for `/api/audit/save` and the backend route handler to log the code into the database under a new `referral_code` column in the `leads` table.
+5. Documented database schema migration changes in `lib/db/schema.sql`.
+6. Dynamically rendered the copyable unique referral URL link (e.g. `http://localhost:3000/?ref=XXXXXX-CRD`) directly in the final dashboard metrics card and the public audit shared views.
+
+**What I learned:**  
+Designing clean numeric inputs in React requires distinguishing between active user typing states (which must allow temporary empty values) and final display states (which clamp on blur). To maintain strict type safety, these empty values must be safely sanitized before performing any mathematical calculations or logical operations. Closing the loop on viral SaaS systems requires coordinating URL query readers on application entry with dynamic path generation at exit.
+
+**Blockers / what I'm stuck on:**  
+None. All components compile beautifully, all features are fully integrated, and database columns are synchronized. 
+
+**Plan for tomorrow:**  
+None! All deliverables have been completed successfully. The application is production-ready.

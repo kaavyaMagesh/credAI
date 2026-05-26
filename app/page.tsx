@@ -253,13 +253,14 @@ function HomeContent() {
   const [error, setError] = useState<string | null>(null);
 
   // Form State
-  const [teamSize, setTeamSize] = useState<number>(5);
+  const [teamSize, setTeamSize] = useState<number | ''>(5);
   const [useCase, setUseCase] = useState<UseCase>('coding');
   const [selectedTools, setSelectedTools] = useState<string[]>([]);
-  const [toolConfigs, setToolConfigs] = useState<Record<string, { planId: string; seats: number; enteredMonthlySpend: number }>>({});
+  const [toolConfigs, setToolConfigs] = useState<Record<string, { planId: string; seats: number | ''; enteredMonthlySpend: number | '' }>>({});
   const [hasComplianceNeeds, setHasComplianceNeeds] = useState<boolean>(false);
   const [requiresHIPAA, setRequiresHIPAA] = useState<boolean>(false);
   const [requiresSSO, setRequiresSSO] = useState<boolean>(false);
+  const [referralCode, setReferralCode] = useState<string>('');
 
   // Lead capture state
   const [email, setEmail] = useState<string>('');
@@ -284,7 +285,7 @@ function HomeContent() {
   const [consultEmail, setConsultEmail] = useState<string>('');
   const [consultCompany, setConsultCompany] = useState<string>('');
   const [consultRole, setConsultRole] = useState<string>('');
-  const [consultTeamSize, setConsultTeamSize] = useState<number>(1);
+  const [consultTeamSize, setConsultTeamSize] = useState<number | ''>(1);
   const [feedbackSubmitting, setFeedbackSubmitting] = useState<boolean>(false);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState<boolean>(false);
 
@@ -294,6 +295,13 @@ function HomeContent() {
     if (typeof window !== 'undefined') {
       setOrigin(window.location.origin);
     }
+
+    // Automatically parse referral code from URL search parameters (e.g. ?ref=9DE1D823-CRD)
+    const ref = searchParams.get('ref') || searchParams.get('referral');
+    if (ref) {
+      setReferralCode(ref.toUpperCase());
+    }
+
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (saved) {
@@ -311,11 +319,12 @@ function HomeContent() {
         if (parsed.step) setStep(parsed.step);
         if (parsed.auditResult) setAuditResult(parsed.auditResult);
         if (parsed.savedSlug) setSavedSlug(parsed.savedSlug);
+        if (parsed.referralCode) setReferralCode(parsed.referralCode);
       }
     } catch (e) {
       console.error('Failed to load localStorage state:', e);
     }
-  }, []);
+  }, [searchParams]);
 
   // 2. Persist
   useEffect(() => {
@@ -334,13 +343,14 @@ function HomeContent() {
         role,
         step,
         auditResult,
-        savedSlug
+        savedSlug,
+        referralCode
       };
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
     } catch (e) {
       console.error('Failed to save state to localStorage:', e);
     }
-  }, [teamSize, useCase, selectedTools, toolConfigs, hasComplianceNeeds, requiresHIPAA, requiresSSO, email, companyName, role, step, auditResult, savedSlug, isMounted]);
+  }, [teamSize, useCase, selectedTools, toolConfigs, hasComplianceNeeds, requiresHIPAA, requiresSSO, email, companyName, role, step, auditResult, savedSlug, referralCode, isMounted]);
 
   const handleReset = () => {
     localStorage.removeItem(LOCAL_STORAGE_KEY);
@@ -359,6 +369,7 @@ function HomeContent() {
     setShowLeadCapture(false);
     setAuditResult(null);
     setSavedSlug(null);
+    setReferralCode('');
     setError(null);
     setFeedbackText('');
     setFeedbackSubmitting(false);
@@ -460,7 +471,8 @@ function HomeContent() {
         const defaultPlan = toolDef.isApi ? 'api' : (toolDef.plans.find(p => p.id === 'pro' || p.id === 'plus' || p.id === 'team')?.id || toolDef.plans[0].id);
         const seats = toolDef.isApi ? 1 : teamSize;
         const defaultPrice = PLAN_PRICES[`${toolId}-${defaultPlan}`] || 0;
-        const enteredMonthlySpend = defaultPrice >= 0 ? defaultPrice * seats : 0;
+        const numericSeats = seats === '' ? 0 : seats;
+        const enteredMonthlySpend = defaultPrice >= 0 ? defaultPrice * numericSeats : 0;
         
         nextConfigs[toolId] = {
           planId: defaultPlan,
@@ -479,7 +491,8 @@ function HomeContent() {
     if (!config) return;
 
     const defaultPrice = PLAN_PRICES[`${toolId}-${planId}`] || 0;
-    const enteredMonthlySpend = defaultPrice >= 0 ? defaultPrice * config.seats : 0;
+    const numericSeats = config.seats === '' ? 0 : config.seats;
+    const enteredMonthlySpend = defaultPrice >= 0 ? defaultPrice * numericSeats : 0;
 
     setToolConfigs({
       ...toolConfigs,
@@ -491,12 +504,12 @@ function HomeContent() {
     });
   };
 
-  const handleSeatChange = (toolId: string, seats: number) => {
+  const handleSeatChange = (toolId: string, seats: number | '') => {
     const config = toolConfigs[toolId];
     if (!config) return;
 
     const defaultPrice = PLAN_PRICES[`${toolId}-${config.planId}`] || 0;
-    const enteredMonthlySpend = defaultPrice >= 0 ? defaultPrice * seats : 0;
+    const enteredMonthlySpend = defaultPrice >= 0 && seats !== '' ? defaultPrice * seats : 0;
 
     setToolConfigs({
       ...toolConfigs,
@@ -534,7 +547,8 @@ function HomeContent() {
         website: honeypot,
         hasComplianceNeeds,
         requiresHIPAA,
-        requiresSSO
+        requiresSSO,
+        referralCode
       };
 
       const response = await fetch('/api/audit/save', {
@@ -687,7 +701,19 @@ function HomeContent() {
                     type="number"
                     min="1"
                     value={teamSize}
-                    onChange={(e) => setTeamSize(Math.max(1, Number(e.target.value)))}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === '') {
+                        setTeamSize('');
+                      } else {
+                        setTeamSize(Number(val));
+                      }
+                    }}
+                    onBlur={() => {
+                      if (teamSize === '' || teamSize < 1) {
+                        setTeamSize(1);
+                      }
+                    }}
                     className="bg-slate-950/80 border border-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-none px-4 py-2.5 text-white font-mono text-sm outline-none transition-colors w-full"
                   />
                   <span className="text-[10px] text-slate-500">Total active developers or seats requiring subscriptions.</span>
@@ -932,7 +958,19 @@ function HomeContent() {
                                 type="number"
                                 min="1"
                                 value={config.seats}
-                                onChange={(e) => handleSeatChange(toolId, Math.max(1, Number(e.target.value)))}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  if (val === '') {
+                                    handleSeatChange(toolId, '');
+                                  } else {
+                                    handleSeatChange(toolId, Number(val));
+                                  }
+                                }}
+                                onBlur={() => {
+                                  if (config.seats === '' || config.seats < 1) {
+                                    handleSeatChange(toolId, 1);
+                                  }
+                                }}
                                 className="bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-none px-3 py-2 text-[11px] text-white outline-none"
                               />
                             </div>
@@ -940,18 +978,32 @@ function HomeContent() {
                             <div className="flex flex-col gap-1.5">
                               <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Actual Spend / month</label>
                               <div className="relative">
-                                <span className="absolute left-3 top-2 text-[11px] text-slate-500 font-bold">$</span>
+                                <span className="absolute left-3 top-2 text-[11px] text-slate-550 font-bold">$</span>
                                 <input
                                   type="number"
                                   min="0"
                                   value={config.enteredMonthlySpend}
-                                  onChange={(e) => setToolConfigs({
-                                    ...toolConfigs,
-                                    [toolId]: {
-                                      ...config,
-                                      enteredMonthlySpend: Math.max(0, Number(e.target.value))
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setToolConfigs({
+                                      ...toolConfigs,
+                                      [toolId]: {
+                                        ...config,
+                                        enteredMonthlySpend: val === '' ? '' : Number(val)
+                                      }
+                                    });
+                                  }}
+                                  onBlur={() => {
+                                    if (config.enteredMonthlySpend === '' || config.enteredMonthlySpend < 0) {
+                                      setToolConfigs({
+                                        ...toolConfigs,
+                                        [toolId]: {
+                                          ...config,
+                                          enteredMonthlySpend: 0
+                                        }
+                                      });
                                     }
-                                  })}
+                                  }}
                                   className="bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-none pl-6 pr-3 py-2 text-[11px] text-white outline-none w-full"
                                 />
                               </div>
@@ -1032,6 +1084,18 @@ function HomeContent() {
                       />
                     </div>
 
+                    <div className="flex flex-col gap-1.5">
+                      <label htmlFor="lead-referral" className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Referral / Promo Code (Optional)</label>
+                      <input
+                        id="lead-referral"
+                        type="text"
+                        placeholder="XXXXXX-CRD"
+                        value={referralCode}
+                        onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                        className="bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-none px-4 py-2.5 text-xs text-white outline-none w-full font-mono uppercase"
+                      />
+                    </div>
+
                     {/* Honeypot field - invisible to humans, auto-filled by bots */}
                     <div className="hidden" style={{ display: 'none' }}>
                       <label htmlFor="lead-website" className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Website</label>
@@ -1084,11 +1148,12 @@ function HomeContent() {
 
           {/* STEP 4: AUDIT RESULTS DISPLAY */}
           {step === 4 && auditResult && (() => {
-            const spendPerDeveloper = Math.round(auditResult.totalCurrentSpend / teamSize);
+            const numericTeamSize = teamSize === '' || teamSize === 0 ? 1 : teamSize;
+            const spendPerDeveloper = Math.round(auditResult.totalCurrentSpend / numericTeamSize);
             let benchmarkAverage = 65;
-            if (teamSize <= 5) {
+            if (numericTeamSize <= 5) {
               benchmarkAverage = 40;
-            } else if (teamSize > 25) {
+            } else if (numericTeamSize > 25) {
               benchmarkAverage = 90;
             }
             return (
@@ -1230,7 +1295,7 @@ function HomeContent() {
                     <span className="text-xl sm:text-2xl font-black text-white mt-1">${spendPerDeveloper}<span className="text-[10px] font-normal text-slate-500"> / dev / mo</span></span>
                   </div>
                   <div className="bg-slate-950/80 border border-slate-850/80 p-4 rounded-none">
-                    <span className="text-[8px] font-bold text-slate-550 uppercase tracking-widest block">PEER AVERAGE ({teamSize <= 5 ? "TINY" : teamSize <= 25 ? "MID-SIZED" : "ENTERPRISE"} COHORT)</span>
+                    <span className="text-[8px] font-bold text-slate-550 uppercase tracking-widest block">PEER AVERAGE ({numericTeamSize <= 5 ? "TINY" : numericTeamSize <= 25 ? "MID-SIZED" : "ENTERPRISE"} COHORT)</span>
                     <span className="text-xl sm:text-2xl font-black text-emerald-400 mt-1">${benchmarkAverage}<span className="text-[10px] font-normal text-slate-500"> / dev / mo</span></span>
                   </div>
                 </div>
@@ -1386,7 +1451,7 @@ function HomeContent() {
                     <span className="text-[8px] text-slate-500">REF_CODE: {savedSlug.slice(0, 8).toUpperCase()}-CRD</span>
                   </div>
                   <div className="text-[11px] text-slate-350 leading-relaxed font-sans font-medium">
-                    Share this audit report or your unique referral link. When another team runs an audit using your code <span className="font-semibold text-emerald-400 font-mono">{savedSlug.slice(0, 8).toUpperCase()}-CRD</span>, <strong>both of you get 30% off</strong> on your first Credex enterprise license integration!
+                    Share this audit report or your unique referral link: <span className="text-emerald-400 font-mono underline select-all">{origin}/?ref={savedSlug.slice(0, 8).toUpperCase()}-CRD</span>. When another team runs an audit using your code <span className="font-semibold text-emerald-400 font-mono">{savedSlug.slice(0, 8).toUpperCase()}-CRD</span>, <strong>both of you get 30% off</strong> on your first Credex enterprise license integration!
                   </div>
                 </div>
               )}
@@ -1552,7 +1617,19 @@ function HomeContent() {
                           min="1"
                           required
                           value={consultTeamSize}
-                          onChange={(e) => setConsultTeamSize(Math.max(1, Number(e.target.value)))}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === '') {
+                              setConsultTeamSize('');
+                            } else {
+                              setConsultTeamSize(Number(val));
+                            }
+                          }}
+                          onBlur={() => {
+                            if (consultTeamSize === '' || consultTeamSize < 1) {
+                              setConsultTeamSize(1);
+                            }
+                          }}
                           className="bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-none px-3.5 py-2 text-xs text-white outline-none w-full"
                         />
                       </div>

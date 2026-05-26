@@ -23,11 +23,13 @@ CREATE TABLE IF NOT EXISTS public.leads (
     company_name VARCHAR(255),
     role VARCHAR(255),
     team_size INTEGER NOT NULL,
-    audit_id UUID REFERENCES public.audits(id) ON DELETE SET NULL
+    audit_id UUID REFERENCES public.audits(id) ON DELETE SET NULL,
+    referral_code VARCHAR(255)
 );
 
 -- Migration support for existing tables:
 ALTER TABLE public.leads ADD COLUMN IF NOT EXISTS role VARCHAR(255);
+ALTER TABLE public.leads ADD COLUMN IF NOT EXISTS referral_code VARCHAR(255);
 
 -- Indexing for fast dynamic fetches and analytical views
 CREATE INDEX IF NOT EXISTS idx_audits_created_at ON public.audits(created_at DESC);

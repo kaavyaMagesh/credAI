@@ -479,7 +479,7 @@ export default async function SharedAuditPage({ params }: PageProps) {
               <span className="text-[8px] text-slate-500">REF_CODE: {slug.slice(0, 8).toUpperCase()}-CRD</span>
             </div>
             <div className="text-[11px] text-slate-350 leading-relaxed font-sans font-medium">
-              Share this audit report or your unique referral link. When another team runs an audit using your code <span className="font-semibold text-emerald-400 font-mono">{slug.slice(0, 8).toUpperCase()}-CRD</span>, <strong>both of you get 30% off</strong> on your first Credex enterprise license integration!
+              Share this audit report or your unique referral link: <span className="text-emerald-400 font-mono underline select-all">{process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/?ref={slug.slice(0, 8).toUpperCase()}-CRD</span>. When another team runs an audit using your code <span className="font-semibold text-emerald-400 font-mono">{slug.slice(0, 8).toUpperCase()}-CRD</span>, <strong>both of you get 30% off</strong> on your first Credex enterprise license integration!
             </div>
           </div>
 
