@@ -6,7 +6,7 @@
 
 ## Interview 1 — R.K., Data Engineer, Mid-Stage Enterprise Environment
 
-I spoke with R.K., a Data Engineer, where AI tooling is actively used across engineering and analytics workflows. The conversation focused on AI spend visibility, budgeting practices, and positioning the product toward the right customer segment.
+I spoke with Manju, a Data Engineer, where AI tooling is actively used across engineering and analytics workflows. The conversation focused on AI spend visibility, budgeting practices, and positioning the product toward the right customer segment.
 
 ### Direct Quotes
 * “How are you determining the benchmark for monthly savings comparisons?”
