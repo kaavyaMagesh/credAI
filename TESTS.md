@@ -35,6 +35,8 @@ Verifies the server-side fallback AI text generation logic when the Gemini API i
   - Verifies that when a stack is fully optimized (savings = $0), a mathematically sound, structured summary of "peak economic efficiency" is compiled.
 * **Test Case 2:** `should generate a rich synthesis summary for non-zero savings`
   - Asserts that when stack leakages are present, a quantitative synthesis report is dynamically built outlining exact plan tiers, direct savings numbers, and consolidation actions.
+* **Test Case 3:** `should generate an appropriate optimized summary explaining compliance exceptions`
+  - Asserts that when active compliance (SAML SSO, SOC2, HIPAA) is enabled and bypasses enterprise downgrades (yielding $0 savings), the text generator intelligently compiles a summary explaining that standard downgrades were bypassed to guarantee mandatory operational security.
 
 ### 3. `tests/audit.test.ts`
 Tests the core business logic engine, checking plan-seat fits, same-vendor downgrades, cross-tool redundancies, and alternative options.
@@ -80,7 +82,7 @@ Validates security mechanisms, rate limiting behaviors, and bot deflection contr
 
 ## Test Automation Metrics
 - **Test Framework:** Vitest
-- **Total Tests:** 18 active assertions
+- **Total Tests:** 20 active assertions
 - **Coverage Target:** 100% coverage on core pricing parser, audit engine rules, rate limiters, bot traps, and security compliance constraints.
 
 ---

@@ -65,14 +65,14 @@ export async function POST(request: Request) {
     let aiSummary = '';
     try {
       if (process.env.GEMINI_API_KEY) {
-        aiSummary = await generateAiSummary(calculatedResult, teamSize, useCase);
+        aiSummary = await generateAiSummary(calculatedResult, teamSize, useCase, hasComplianceNeeds, requiresHIPAA, requiresSSO);
       } else {
         console.warn('GEMINI_API_KEY is not defined in environment. Triggering fallback template summary.');
-        aiSummary = generateFallbackSummary(calculatedResult, teamSize, useCase);
+        aiSummary = generateFallbackSummary(calculatedResult, teamSize, useCase, hasComplianceNeeds, requiresHIPAA, requiresSSO);
       }
     } catch (aiError: any) {
       console.error('AI Summary generation failed, triggering fallback:', aiError);
-      aiSummary = generateFallbackSummary(calculatedResult, teamSize, useCase);
+      aiSummary = generateFallbackSummary(calculatedResult, teamSize, useCase, hasComplianceNeeds, requiresHIPAA, requiresSSO);
     }
     calculatedResult.aiSummary = aiSummary;
 
@@ -204,7 +204,14 @@ export async function POST(request: Request) {
 // AI Personalization Pipeline & Fallbacks
 // ----------------------------------------------------
 
-async function generateAiSummary(result: any, teamSize: number, useCase: string): Promise<string> {
+async function generateAiSummary(
+  result: any, 
+  teamSize: number, 
+  useCase: string,
+  hasComplianceNeeds?: boolean,
+  requiresHIPAA?: boolean,
+  requiresSSO?: boolean
+): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error('GEMINI_API_KEY is not set');
@@ -218,6 +225,7 @@ async function generateAiSummary(result: any, teamSize: number, useCase: string)
   const systemInstruction = `You are Credex AI, an elite technical systems auditor. Your task is to analyze the user's SaaS tooling stack and calculations, and write a professional, highly high-density, technical, personalized summary of their optimization report.
 Keep it strictly factual and actionable. Avoid generic fluff, buzzwords, or unnecessary greetings. Target approximately 100 words (or 3-4 concise, high-density sentences).
 Focus on specific tooling redundancies, plan tier misfits, and the exact magnitude of the financial leaks.
+If active compliance controls (SAML SSO, SOC2, HIPAA) are enabled and have prevented enterprise downgrades, explicitly highlight in your summary that these compliance dependencies correctly make downgrades impossible to guarantee data security.
 Do NOT output any markdown headers, bold titles, labels, or title strings (e.g., do NOT start with "SaaS Optimization Report:" or similar). Instead, start directly with the direct, quantitative analytical sentences. Keep the language authentic, engineering-focused, and highly quantitative.`;
 
   const prompt = `Audit Context:
@@ -227,12 +235,14 @@ Do NOT output any markdown headers, bold titles, labels, or title strings (e.g.,
 - Total Optimized Monthly Spend: $${result.totalOptimizedSpend}
 - Total Monthly Savings: $${result.monthlySavings} (Annualized: $${result.annualSavings})
 - Overall Stack Severity: ${result.overallSeverity.toUpperCase()}
+- Compliance Requirements Active: ${hasComplianceNeeds || requiresHIPAA || requiresSSO ? 'YES' : 'NO'}
+  ${hasComplianceNeeds ? '  - SOC2/ISO compliance guidelines active\n' : ''}${requiresHIPAA ? '  - HIPAA regulatory restrictions active\n' : ''}${requiresSSO ? '  - SAML Single Sign-On (SSO) active\n' : ''}
 
 Detailed Tool Audits:
 ${toolDetails}
 
 Provide a ~100-word quantitative synthesis report detailing:
-1. Exactly what is leaking (e.g., specific redundancies like Copilot/Cursor overlap, plan tier misfits like tiny teams on enterprise plans, or direct API spends over $300 eligible for Credex credits).
+1. Exactly what is leaking or being optimally preserved due to compliance (e.g., active SAML SSO, SOC2, or HIPAA requirements making enterprise downgrades impossible to guarantee security standards).
 2. The concrete optimization action recommended.
 3. The absolute direct business value of the savings ($${result.monthlySavings}/mo).`;
 

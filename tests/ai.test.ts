@@ -76,4 +76,35 @@ describe('AI Fallback Text Generator', () => {
     expect(summary).toContain('recover $190/mo');
     expect(summary).toContain('annual savings of $2280');
   });
+
+  it('should generate an appropriate optimized summary explaining compliance exceptions', () => {
+    const mockResult = {
+      totalCurrentSpend: 400,
+      totalOptimizedSpend: 400,
+      monthlySavings: 0,
+      annualSavings: 0,
+      overallSeverity: 'optimal',
+      results: [
+        {
+          toolId: 'claude',
+          toolName: 'Claude',
+          currentPlanName: 'Enterprise',
+          currentSpend: 400,
+          optimizedSpend: 400,
+          savings: 0,
+          annualSavings: 0,
+          severity: 'optimal',
+          recommendationType: 'optimal',
+          recommendation: 'Compliance dependencies active.',
+          confidence: 0.95
+        }
+      ]
+    };
+
+    const summary = generateFallbackSummary(mockResult, 8, 'mixed', true, false, true);
+    expect(summary).toContain('peak operational security');
+    expect(summary).toContain('SOC2/ISO compliance guidelines');
+    expect(summary).toContain('SAML SSO user management');
+    expect(summary).toContain('safely bypassed');
+  });
 });
