@@ -41,13 +41,27 @@ Tests the core business logic engine, checking plan-seat fits, same-vendor downg
   - Asserts that direct API bills above $300/mo trigger the `creditFlag` and calculate a 30% savings rate through Credex credits.
 * **Test Case 5:** `should deliver an honest zero state for a fully optimized stack`
   - Asserts that an already-optimized stack yields $0 savings, triggers `optimal` overall severity, and displays our authentic zero-state congratulatory message.
+* **Test Case 6:** `should detect Claude Pro + Gemini Pro redundancy and recommend standardizing on Claude Pro`
+  - Asserts that holding both premium chat assistants triggers Gemini consolidation to save money while retaining Claude Pro.
+* **Test Case 7:** `should detect OpenAI API + Gemini API overlap and recommend standardizing non-reasoning agent requests on Gemini API`
+  - Asserts standardizing high-throughput API agent workloads on cheaper Gemini API endpoints while retaining OpenAI for critical items.
+
+### 3. `tests/abuse.test.ts`
+Validates security mechanisms, rate limiting behaviors, and bot deflection controls.
+
+* **Test Case 1:** `Rate Limiter - should allow up to 5 requests in a window and then rate limit`
+  - Asserts that the IP-based rate limiter permits a maximum of 5 requests in a 10-minute window, blocking any subsequent calls.
+* **Test Case 2:** `Rate Limiter - should track rate limits independently by IP address`
+  - Asserts that rate limiting metrics are isolated per client IP address.
+* **Test Case 3:** `Honeypot Bot Trap - should immediately deflect a bot request if website honeypot is populated`
+  - Asserts that when a bot auto-fills the hidden `website` input field, the endpoint intercepts the request, blocks database insertion, and returns a dummy `mock-bot-slug` response instantly.
 
 ---
 
 ## Test Automation Metrics
 - **Test Framework:** Vitest
-- **Total Tests:** 12 active assertions
-- **Coverage Target:** 100% coverage on core pricing parser and audit engine logical rules.
+- **Total Tests:** 14 active assertions
+- **Coverage Target:** 100% coverage on core pricing parser, audit engine rules, rate limiters, and bot traps.
 
 ---
 
