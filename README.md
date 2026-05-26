@@ -1,6 +1,13 @@
 # CredAI — AI Spend Audit Tool
 
-Credex Stack Auditor is an elite, industrial-brutalist spend optimization dashboard built for seed-stage startups and software engineering managers paying for overlapping AI licenses. The tool dynamically parses live pricing schedules to isolate monthly financial leakages, consolidate redundant editor seats, and flag high-usage teams eligible for Credex bulk credit conversions. By gating dynamic, shareable reports after quantitative value delivery, it drives highly qualified, high-intent leads directly into the Credex conversion pipeline.
+CredAI is an AI Spend Audit Tool that tells any startup engineering team exactly where
+they are overspending on AI tools — Cursor, Copilot, Claude, ChatGPT, and others
+— with specific plan-level recommendations and real savings numbers, in under
+3 minutes, no login required. It is built for the senior engineer or tech lead
+who has been asked to justify their team's AI tooling spend but has no benchmark
+to work from. For teams where the audit surfaces significant savings, it connects
+them to Credex — a service that sources discounted AI credits from companies that
+overforecast — as the next step to actually capture those savings.
 
 ---
 
