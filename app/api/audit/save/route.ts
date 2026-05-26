@@ -139,9 +139,25 @@ export async function POST(request: Request) {
         console.error('Database connection / insertion failed:', dbError);
         errorMessage = dbError.message || 'Supabase integration failed';
       }
-    } else {
-      console.warn('Supabase credentials missing from environment. Operating in mock save mode.');
-      errorMessage = 'Supabase environment variables are missing.';
+    }
+    
+    // If we tried to save to Supabase but failed, fall back to offline serialization so the URL still works!
+    if (!saved) {
+      console.warn('Supabase saving failed or was bypassed. Generating offline serialized payload fallback.');
+      try {
+        const offlinePayload = {
+          team_size: teamSize,
+          use_case: useCase,
+          results_payload: calculatedResult
+        };
+        const serialized = JSON.stringify(offlinePayload);
+        const b64 = Buffer.from(serialized).toString('base64url');
+        slug = `offline-${b64}`;
+        saved = true;
+      } catch (encodeErr) {
+        console.error('Failed to encode offline sharing payload fallback:', encodeErr);
+        slug = 'mock-demo-slug';
+      }
     }
 
     // 3. Send transactional audit confirmation email via Resend

@@ -44,6 +44,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (isDemo) {
     savingsAmount = 2280; // $190/mo * 12
+  } else if (slug.startsWith('offline-')) {
+    try {
+      const b64 = slug.substring(8);
+      const decoded = Buffer.from(b64, 'base64url').toString('utf8');
+      const parsed = JSON.parse(decoded);
+      savingsAmount = parsed.results_payload?.annualSavings || 0;
+    } catch (e) {
+      console.error('Metadata generation failed to parse offline payload:', e);
+    }
   } else {
     try {
       const { data } = await supabase
@@ -144,6 +153,16 @@ export default async function SharedAuditPage({ params }: PageProps) {
 
   if (isDemo) {
     auditData = DEMO_AUDIT_RESULT;
+  } else if (slug.startsWith('offline-')) {
+    try {
+      const b64 = slug.substring(8);
+      const decoded = Buffer.from(b64, 'base64url').toString('utf8');
+      auditData = JSON.parse(decoded);
+    } catch (e) {
+      console.warn(`Failed to parse offline sharing payload for slug ${slug}:`, e);
+      auditData = DEMO_AUDIT_RESULT;
+      isDemo = true;
+    }
   } else {
     try {
       // Security measure: strictly fetch team_size, use_case, results_payload
