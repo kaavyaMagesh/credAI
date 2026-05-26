@@ -268,7 +268,8 @@ function HomeContent() {
   const [companyName, setCompanyName] = useState<string>('');
   const [role, setRole] = useState<string>('');
   const [honeypot, setHoneypot] = useState<string>('');
-  const [showLeadCapture, setShowLeadCapture] = useState<boolean>(false);
+  const [emailSubmitted, setEmailSubmitted] = useState<boolean>(false);
+  const [leadSaving, setLeadSaving] = useState<boolean>(false);
 
   // Audit Results & slug
   const [auditResult, setAuditResult] = useState<AggregateAudit | null>(null);
@@ -367,7 +368,8 @@ function HomeContent() {
     setCompanyName('');
     setRole('');
     setHoneypot('');
-    setShowLeadCapture(false);
+    setEmailSubmitted(false);
+    setLeadSaving(false);
     setAuditResult(null);
     setSavedSlug(null);
     setReferralCode('');
@@ -522,16 +524,67 @@ function HomeContent() {
     });
   };
 
-  const handleSaveAndRunAudit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) {
-      setError('A valid work email is required.');
-      return;
-    }
-
+  const handleRunAudit = async () => {
     setLoading(true);
     setError(null);
     
+    try {
+      const payload = {
+        teamSize,
+        useCase,
+        tools: selectedTools.map(id => ({
+          toolId: id,
+          planId: toolConfigs[id]?.planId || 'pro',
+          seats: toolConfigs[id]?.seats || 1,
+          enteredMonthlySpend: Number(toolConfigs[id]?.enteredMonthlySpend || 0)
+        })),
+        email: '', // No mandatory email before values
+        companyName: '',
+        role: '',
+        website: honeypot,
+        hasComplianceNeeds,
+        requiresHIPAA,
+        requiresSSO,
+        referralCode
+      };
+
+      const response = await fetch('/api/audit/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Server calculations failed.');
+      }
+
+      const resData = await response.json();
+      
+      if (resData.success) {
+        setAuditResult(resData.calculatedResult);
+        setSavedSlug(resData.slug);
+        setStep(4);
+      } else {
+        throw new Error(resData.errorMessage || 'Failed to register stack.');
+      }
+    } catch (e: any) {
+      console.error('Audit operation failed:', e);
+      setError(e.message || 'Audit compilation mismatch.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOptionalLeadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+
+    setLeadSaving(true);
+    setError(null);
+
     try {
       const payload = {
         teamSize,
@@ -562,24 +615,24 @@ function HomeContent() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Server calculations failed.');
+        throw new Error(errorData.error || 'Failed to register details.');
       }
 
       const resData = await response.json();
       
       if (resData.success) {
-        setAuditResult(resData.calculatedResult);
-        setSavedSlug(resData.slug);
-        setShowLeadCapture(false);
-        setStep(4);
+        if (resData.slug) {
+          setSavedSlug(resData.slug);
+        }
+        setEmailSubmitted(true);
       } else {
-        throw new Error(resData.errorMessage || 'Failed to register stack.');
+        throw new Error(resData.errorMessage || 'Failed to link email to report.');
       }
-    } catch (e: any) {
-      console.error('Audit operation failed:', e);
-      setError(e.message || 'Supabase integration mismatch.');
+    } catch (err: any) {
+      console.error('Lead link failed:', err);
+      setError(err.message || 'Failed to save email details.');
     } finally {
-      setLoading(false);
+      setLeadSaving(false);
     }
   };
 
@@ -888,262 +941,159 @@ function HomeContent() {
             </div>
           )}
 
-          {/* STEP 3: DETAILS & SPEND / LEAD FORM */}
+          {/* STEP 3: DETAILS & SPEND */}
           {step === 3 && (
             <div className="space-y-6">
-              {!showLeadCapture ? (
-                <>
-                  <div className="border-b border-slate-850 pb-4 text-left">
-                    <h2 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2 font-mono">
-                      <Sliders className="w-4 h-4 text-emerald-400" />
-                      03 // Rates & Constraints Tuning
-                    </h2>
-                    <p className="text-xs text-slate-400 mt-1">Match your plans to official price schedules or adjust numbers for customized discount structures.</p>
-                  </div>
+              <div className="border-b border-slate-850 pb-4 text-left">
+                <h2 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2 font-mono">
+                  <Sliders className="w-4 h-4 text-emerald-400" />
+                  03 // Rates & Constraints Tuning
+                </h2>
+                <p className="text-xs text-slate-400 mt-1">Match your plans to official price schedules or adjust numbers for customized discount structures.</p>
+              </div>
 
-                  {/* Tech Grid configurations list */}
-                  <div className="space-y-4 pt-2">
-                    {selectedTools.map((toolId) => {
-                      const metadata = TOOLS.find(t => t.id === toolId);
-                      const config = toolConfigs[toolId];
-                      if (!metadata || !config) return null;
+              {/* Tech Grid configurations list */}
+              <div className="space-y-4 pt-2">
+                {selectedTools.map((toolId) => {
+                  const metadata = TOOLS.find(t => t.id === toolId);
+                  const config = toolConfigs[toolId];
+                  if (!metadata || !config) return null;
 
-                      return (
-                        <div key={toolId} className="bg-slate-950/40 border border-slate-850 rounded-none p-5 space-y-4 text-left relative">
-                          {/* Inner Tech TL corner dot */}
-                          <div className="absolute top-0 left-0 w-1 h-1 bg-slate-850" />
-                          
-                          <div className="flex items-center justify-between border-b border-slate-850/80 pb-3">
-                            <div className="flex items-center gap-2.5">
-                              <div className="p-1 bg-emerald-500/10 border border-emerald-500/30 rounded-none text-emerald-400">
-                                {metadata.category === 'Editor' && <Terminal className="w-3.5 h-3.5" />}
-                                {metadata.category === 'Assistant' && <Sparkles className="w-3.5 h-3.5" />}
-                                {metadata.category === 'API' && <Building2 className="w-3.5 h-3.5" />}
-                                {metadata.category === 'UI Generation' && <Plus className="w-3.5 h-3.5" />}
-                              </div>
-                              <span className="text-xs font-bold text-white uppercase tracking-wider font-mono">{metadata.name}</span>
-                            </div>
-                            <span className="text-[9px] font-mono text-slate-500 tracking-widest uppercase">CAT: {metadata.category}</span>
+                  return (
+                    <div key={toolId} className="bg-slate-950/40 border border-slate-850 rounded-none p-5 space-y-4 text-left relative">
+                      {/* Inner Tech TL corner dot */}
+                      <div className="absolute top-0 left-0 w-1 h-1 bg-slate-850" />
+                      
+                      <div className="flex items-center justify-between border-b border-slate-850/80 pb-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="p-1 bg-emerald-500/10 border border-emerald-500/30 rounded-none text-emerald-400">
+                            {metadata.category === 'Editor' && <Terminal className="w-3.5 h-3.5" />}
+                            {metadata.category === 'Assistant' && <Sparkles className="w-3.5 h-3.5" />}
+                            {metadata.category === 'API' && <Building2 className="w-3.5 h-3.5" />}
+                            {metadata.category === 'UI Generation' && <Plus className="w-3.5 h-3.5" />}
                           </div>
+                          <span className="text-xs font-bold text-white uppercase tracking-wider font-mono">{metadata.name}</span>
+                        </div>
+                        <span className="text-[9px] font-mono text-slate-500 tracking-widest uppercase">CAT: {metadata.category}</span>
+                      </div>
 
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono">
-                            {!metadata.isApi ? (
-                              <div className="flex flex-col gap-1.5">
-                                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Plan Selection</label>
-                                <select
-                                  value={config.planId}
-                                  onChange={(e) => handlePlanChange(toolId, e.target.value)}
-                                  className="bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-none px-3 py-2 text-[11px] text-white outline-none cursor-pointer"
-                                >
-                                  {metadata.plans.map(plan => (
-                                    <option key={plan.id} value={plan.id}>
-                                      {plan.name} {plan.price >= 0 ? `($${plan.price}/mo)` : '(Custom)'}
-                                    </option>
-                                  ))}
-                                </select>
-                              </div>
-                            ) : (
-                              <div className="flex flex-col gap-1.5">
-                                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Billing Tier</label>
-                                <div className="bg-slate-950 border border-slate-800 text-slate-500 text-[11px] px-3 py-2 rounded-none font-bold uppercase tracking-wider select-none">
-                                  Usage API
-                                </div>
-                              </div>
-                            )}
-
-                            <div className="flex flex-col gap-1.5">
-                              <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                                {metadata.isApi ? 'Developer Accounts' : 'Seats Count'}
-                              </label>
-                              <input
-                                type="number"
-                                min="1"
-                                value={config.seats}
-                                onChange={(e) => {
-                                  const val = e.target.value;
-                                  if (val === '') {
-                                    handleSeatChange(toolId, '');
-                                  } else {
-                                    handleSeatChange(toolId, Number(val));
-                                  }
-                                }}
-                                onBlur={() => {
-                                  if (config.seats === '' || config.seats < 1) {
-                                    handleSeatChange(toolId, 1);
-                                  }
-                                }}
-                                className="bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-none px-3 py-2 text-[11px] text-white outline-none"
-                              />
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono">
+                        {!metadata.isApi ? (
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Plan Selection</label>
+                            <select
+                              value={config.planId}
+                              onChange={(e) => handlePlanChange(toolId, e.target.value)}
+                              className="bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-none px-3 py-2 text-[11px] text-white outline-none cursor-pointer"
+                            >
+                              {metadata.plans.map(plan => (
+                                <option key={plan.id} value={plan.id}>
+                                  {plan.name} {plan.price >= 0 ? `($${plan.price}/mo)` : '(Custom)'}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Billing Tier</label>
+                            <div className="bg-slate-950 border border-slate-800 text-slate-500 text-[11px] px-3 py-2 rounded-none font-bold uppercase tracking-wider select-none">
+                              Usage API
                             </div>
+                          </div>
+                        )}
 
-                            <div className="flex flex-col gap-1.5">
-                              <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Actual Spend / month</label>
-                              <div className="relative">
-                                <span className="absolute left-3 top-2 text-[11px] text-slate-550 font-bold">$</span>
-                                <input
-                                  type="number"
-                                  min="0"
-                                  value={config.enteredMonthlySpend}
-                                  onChange={(e) => {
-                                    const val = e.target.value;
-                                    setToolConfigs({
-                                      ...toolConfigs,
-                                      [toolId]: {
-                                        ...config,
-                                        enteredMonthlySpend: val === '' ? '' : Number(val)
-                                      }
-                                    });
-                                  }}
-                                  onBlur={() => {
-                                    if (config.enteredMonthlySpend === '' || config.enteredMonthlySpend < 0) {
-                                      setToolConfigs({
-                                        ...toolConfigs,
-                                        [toolId]: {
-                                          ...config,
-                                          enteredMonthlySpend: 0
-                                        }
-                                      });
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                            {metadata.isApi ? 'Developer Accounts' : 'Seats Count'}
+                          </label>
+                          <input
+                            type="number"
+                            min="1"
+                            value={config.seats}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val === '') {
+                                handleSeatChange(toolId, '');
+                              } else {
+                                handleSeatChange(toolId, Number(val));
+                              }
+                            }}
+                            onBlur={() => {
+                              if (config.seats === '' || config.seats < 1) {
+                                handleSeatChange(toolId, 1);
+                              }
+                            }}
+                            className="bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-none px-3 py-2 text-[11px] text-white outline-none"
+                          />
+                        </div>
+
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Actual Spend / month</label>
+                          <div className="relative">
+                            <span className="absolute left-3 top-2 text-[11px] text-slate-550 font-bold">$</span>
+                            <input
+                              type="number"
+                              min="0"
+                              value={config.enteredMonthlySpend}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setToolConfigs({
+                                  ...toolConfigs,
+                                  [toolId]: {
+                                    ...config,
+                                    enteredMonthlySpend: val === '' ? '' : Number(val)
+                                  }
+                                });
+                              }}
+                              onBlur={() => {
+                                if (config.enteredMonthlySpend === '' || config.enteredMonthlySpend < 0) {
+                                  setToolConfigs({
+                                    ...toolConfigs,
+                                    [toolId]: {
+                                      ...config,
+                                      enteredMonthlySpend: 0
                                     }
-                                  }}
-                                  className="bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-none pl-6 pr-3 py-2 text-[11px] text-white outline-none w-full"
-                                />
-                              </div>
-                            </div>
+                                  });
+                                }
+                              }}
+                              className="bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-none pl-6 pr-3 py-2 text-[11px] text-white outline-none w-full"
+                            />
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
 
-                  {/* Navigation */}
-                  <div className="flex justify-between pt-6 border-t border-slate-850 mt-6">
-                    <button
-                      onClick={() => setStep(2)}
-                      className="flex items-center gap-1.5 border border-slate-800 bg-slate-950/40 text-slate-400 hover:text-white px-5 py-2.5 rounded-none transition-all text-xs font-mono uppercase tracking-wider"
-                    >
-                      <ChevronLeft className="w-3.5 h-3.5" />
-                      Back
-                    </button>
+              {/* Navigation */}
+              <div className="flex justify-between pt-6 border-t border-slate-850 mt-6">
+                <button
+                  onClick={() => setStep(2)}
+                  className="flex items-center gap-1.5 border border-slate-800 bg-slate-950/40 text-slate-400 hover:text-white px-5 py-2.5 rounded-none transition-all text-xs font-mono uppercase tracking-wider"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                  Back
+                </button>
 
-                    <button
-                      onClick={() => setShowLeadCapture(true)}
-                      className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-[#020617] font-mono font-bold uppercase tracking-wider text-[11px] px-6 py-2.5 rounded-none shadow-md shadow-emerald-500/5 transition-all"
-                    >
+                <button
+                  onClick={handleRunAudit}
+                  disabled={loading}
+                  className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-850 disabled:text-slate-650 text-[#020617] font-mono font-bold uppercase tracking-wider text-[11px] px-6 py-2.5 rounded-none shadow-md shadow-emerald-500/5 transition-all"
+                >
+                  {loading ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border border-[#020617] border-t-transparent animate-spin"></div>
+                      Calculating...
+                    </>
+                  ) : (
+                    <>
                       Generate Audit Report
                       <ChevronRight className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </>
-              ) : (
-                /* LEAD CAPTURE FORM */
-                <form onSubmit={handleSaveAndRunAudit} className="space-y-6 max-w-sm mx-auto py-6 font-mono text-left">
-                  <div className="text-center space-y-2 border-b border-slate-850 pb-4 mb-4">
-                    <div className="w-10 h-10 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-none flex items-center justify-center mx-auto mb-2">
-                      <Mail className="w-5 h-5" />
-                    </div>
-                    <h2 className="text-sm font-bold text-white uppercase tracking-widest font-mono">Unlock Stack Report</h2>
-                    <p className="text-[10px] text-slate-500 font-sans leading-relaxed">
-                      Register work details to compute audit metrics and output your dynamic shareable dashboard URL.
-                    </p>
-                  </div>
-
-                  <div className="space-y-4 pt-2">
-                    <div className="flex flex-col gap-1.5">
-                      <label htmlFor="lead-email" className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Work Email Address</label>
-                      <input
-                        id="lead-email"
-                        type="email"
-                        required
-                        placeholder="user@organization.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-none px-4 py-2.5 text-xs text-white outline-none w-full font-mono"
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      <label htmlFor="lead-company" className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Company / Org Name (Optional)</label>
-                      <input
-                        id="lead-company"
-                        type="text"
-                        placeholder="Initech Corp"
-                        value={companyName}
-                        onChange={(e) => setCompanyName(e.target.value)}
-                        className="bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-none px-4 py-2.5 text-xs text-white outline-none w-full font-mono"
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      <label htmlFor="lead-role" className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Job Title / Role (Optional)</label>
-                      <input
-                        id="lead-role"
-                        type="text"
-                        placeholder="CTO / Head of Engineering"
-                        value={role}
-                        onChange={(e) => setRole(e.target.value)}
-                        className="bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-none px-4 py-2.5 text-xs text-white outline-none w-full font-mono"
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      <label htmlFor="lead-referral" className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Referral / Promo Code (Optional)</label>
-                      <input
-                        id="lead-referral"
-                        type="text"
-                        placeholder="XXXXXX-CRD"
-                        value={referralCode}
-                        onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-                        className="bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-none px-4 py-2.5 text-xs text-white outline-none w-full font-mono uppercase"
-                      />
-                    </div>
-
-                    {/* Honeypot field - invisible to humans, auto-filled by bots */}
-                    <div className="hidden" style={{ display: 'none' }}>
-                      <label htmlFor="lead-website" className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Website</label>
-                      <input
-                        id="lead-website"
-                        type="text"
-                        name="website"
-                        tabIndex={-1}
-                        autoComplete="off"
-                        value={honeypot}
-                        onChange={(e) => setHoneypot(e.target.value)}
-                        className="bg-slate-950 border border-slate-800 rounded-none px-4 py-2.5 text-xs text-white outline-none w-full font-mono"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex gap-3 pt-4 justify-center">
-                    <button
-                      type="button"
-                      disabled={loading}
-                      onClick={() => setShowLeadCapture(false)}
-                      className="border border-slate-850 bg-slate-950/40 text-slate-400 hover:text-white px-5 py-2.5 rounded-none transition-all text-xs font-mono uppercase tracking-wider"
-                    >
-                      Cancel
-                    </button>
-                    
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-[#020617] font-mono font-bold uppercase tracking-wider text-xs px-6 py-2.5 rounded-none shadow-md shadow-emerald-500/5 disabled:bg-slate-850 disabled:text-slate-650"
-                    >
-                      {loading ? (
-                        <>
-                          <div className="w-3.5 h-3.5 border border-[#020617] border-t-transparent animate-spin"></div>
-                          Loading...
-                        </>
-                      ) : (
-                        <>
-                          Build Report
-                          <ChevronRight className="w-3.5 h-3.5" />
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </form>
-              )}
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           )}
 
@@ -1474,6 +1424,92 @@ function HomeContent() {
                   )}
                 </div>
               )}
+
+              {/* Optional Post-Audit Saving & Inbox Copy */}
+              <div className="bg-slate-950/40 border border-slate-850 p-6 rounded-none text-left font-mono relative space-y-4 print:hidden">
+                <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
+                <div className="flex justify-between items-center border-b border-slate-850/80 pb-2.5">
+                  <span className="text-[10px] font-bold text-emerald-400 tracking-widest flex items-center gap-2">
+                    <Mail className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    SAVE REPORT & RECEIVE INBOX COPY
+                  </span>
+                  <span className="text-[8px] text-slate-500">OPTIONAL_ARCHIVE_GATE</span>
+                </div>
+
+                {emailSubmitted ? (
+                  <div className="p-4 bg-emerald-950/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono rounded-none">
+                    [ SAVED ]: Your report has been permanently archived. Check your inbox for a copy.
+                  </div>
+                ) : (
+                  <form onSubmit={handleOptionalLeadSubmit} className="space-y-4">
+                    <p className="text-[11px] text-slate-350 leading-relaxed font-sans">
+                      Enter your email to permanently archive this report, upgrade your offline access slug, and get a copy of this analysis delivered straight to your inbox.
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="flex flex-col gap-1.5">
+                        <label htmlFor="save-email" className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                          B2B Business Email *
+                        </label>
+                        <input
+                          id="save-email"
+                          type="email"
+                          required
+                          placeholder="you@company.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-none px-3 py-2 text-[11px] text-white outline-none font-mono"
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-1.5">
+                        <label htmlFor="save-company" className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                          Company Name
+                        </label>
+                        <input
+                          id="save-company"
+                          type="text"
+                          placeholder="Acme Corp"
+                          value={companyName}
+                          onChange={(e) => setCompanyName(e.target.value)}
+                          className="bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-none px-3 py-2 text-[11px] text-white outline-none font-mono"
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-1.5">
+                        <label htmlFor="save-role" className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                          Your Role
+                        </label>
+                        <input
+                          id="save-role"
+                          type="text"
+                          placeholder="VP of Engineering"
+                          value={role}
+                          onChange={(e) => setRole(e.target.value)}
+                          className="bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-none px-3 py-2 text-[11px] text-white outline-none font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end pt-1">
+                      <button
+                        type="submit"
+                        disabled={leadSaving || !email.trim()}
+                        className="bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-850 disabled:text-slate-650 text-[#020617] font-mono font-bold uppercase tracking-wider text-[10px] px-5 py-2.5 rounded-none shadow-md transition-all cursor-pointer"
+                      >
+                        {leadSaving ? (
+                          <span className="flex items-center gap-1.5">
+                            <span className="w-3 h-3 border border-[#020617] border-t-transparent animate-spin"></span>
+                            Archiving...
+                          </span>
+                        ) : (
+                          'Save Report & Email Copy'
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
 
               {/* FEEDBACK & INTEGRATION REQUESTS PANEL */}
               <div className="bg-slate-950/40 border border-slate-850 p-6 rounded-none text-left font-mono relative space-y-4 print:hidden">
