@@ -1151,14 +1151,14 @@ function HomeContent() {
                 </div>
 
                 <div className="flex gap-4 shrink-0 font-mono w-full sm:w-auto pt-4 md:pt-0">
-                  <div className="text-center bg-slate-950 border border-slate-850 p-4 rounded-none shrink-0 w-28 sm:w-32">
+                  <div className="text-center bg-slate-950 border border-slate-850 p-4 rounded-none shrink-0 min-w-[130px] sm:min-w-[155px] w-auto px-4">
                     <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Monthly savings</p>
-                    <p className="text-xl sm:text-2xl font-bold text-emerald-400 mt-1">${auditResult.monthlySavings}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-emerald-400 mt-1">${auditResult.monthlySavings.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</p>
                   </div>
 
-                  <div className="text-center bg-emerald-500 text-[#020617] border border-emerald-400 p-4 rounded-none shrink-0 w-28 sm:w-32 shadow-lg shadow-emerald-500/5">
+                  <div className="text-center bg-emerald-500 text-[#020617] border border-emerald-400 p-4 rounded-none shrink-0 min-w-[130px] sm:min-w-[155px] w-auto px-4 shadow-lg shadow-emerald-500/5">
                     <p className="text-[9px] font-extrabold uppercase tracking-widest">Annual savings</p>
-                    <p className="text-xl sm:text-2xl font-black mt-1">${auditResult.annualSavings}</p>
+                    <p className="text-xl sm:text-2xl font-black mt-1">${auditResult.annualSavings.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</p>
                   </div>
                 </div>
               </div>
