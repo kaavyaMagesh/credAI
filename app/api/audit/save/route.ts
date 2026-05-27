@@ -168,15 +168,26 @@ export async function POST(request: Request) {
           const protocol = request.headers.get('x-forwarded-proto') || 'http';
           const appUrl = process.env.NEXT_PUBLIC_APP_URL || `${protocol}://${host}`;
 
+          console.log(`[RESEND_DEBUG] Attempting to send transactional audit email to: ${email}...`);
           const emailResponse = await sendTransactionalEmail(email, companyName, calculatedResult, slug, appUrl);
+          
+          let responseText = '';
+          try {
+            responseText = await emailResponse.text();
+          } catch (e) {
+            responseText = 'Could not parse response text';
+          }
+
+          console.log(`[RESEND_DEBUG] Resend API Response Status: ${emailResponse.status}`);
+          console.log(`[RESEND_DEBUG] Resend API Response Body: ${responseText}`);
+
           if (!emailResponse.ok) {
-            const errText = await emailResponse.text();
-            console.error(`Resend API returned status ${emailResponse.status}: ${errText}`);
+            console.error(`[RESEND_ERROR] Resend API returned status ${emailResponse.status}: ${responseText}`);
           } else {
             console.log(`Successfully dispatched transactional audit verification email to ${email}`);
           }
         } catch (emailError: any) {
-          console.error('Failed to send transactional audit email:', emailError);
+          console.error('[RESEND_ERROR] Exception caught while sending transactional email:', emailError);
         }
       } else {
         console.warn('RESEND_API_KEY is not defined in environment. Skipping transactional email sending.');
