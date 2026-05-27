@@ -226,6 +226,7 @@ async function generateAiSummary(
 Keep it strictly factual and actionable. Avoid generic fluff, buzzwords, or unnecessary greetings. Target approximately 100 words (or 3-4 concise, high-density sentences).
 Focus on specific tooling redundancies, plan tier misfits, and the exact magnitude of the financial leaks.
 If active compliance controls (SAML SSO, SOC2, HIPAA) are enabled and have prevented enterprise downgrades, explicitly highlight in your summary that these compliance dependencies correctly make downgrades impossible to guarantee data security.
+Additionally, if any tool is preserved on a high tier (such as Enterprise) with $0 savings because standard retail downgrades would actually INCREASE their monthly expenses due to their highly discounted pre-existing contract (e.g. Cursor Enterprise costing $400 for 14 seats, while Business retail would cost $560), explicitly highlight this intelligent economic safeguard as a key highlight of our engine's financial prudence.
 Do NOT output any markdown headers, bold titles, labels, or title strings (e.g., do NOT start with "SaaS Optimization Report:" or similar). Instead, start directly with the direct, quantitative analytical sentences. Keep the language authentic, engineering-focused, and highly quantitative.`;
 
   const prompt = `Audit Context:
@@ -242,7 +243,7 @@ Detailed Tool Audits:
 ${toolDetails}
 
 Provide a ~100-word quantitative synthesis report detailing:
-1. Exactly what is leaking or being optimally preserved due to compliance (e.g., active SAML SSO, SOC2, or HIPAA requirements making enterprise downgrades impossible to guarantee security standards).
+1. Exactly what is leaking, or being optimally preserved due to compliance or pre-existing contract economic safety safeguards (where standard downgrades would increase monthly costs).
 2. The concrete optimization action recommended.
 3. The absolute direct business value of the savings ($${result.monthlySavings}/mo).`;
 

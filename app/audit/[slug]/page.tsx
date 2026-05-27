@@ -327,34 +327,6 @@ export default async function SharedAuditPage({ params }: PageProps) {
             </div>
           )}
 
-          {/* BENCHMARK MODE PANEL */}
-          <div className="bg-slate-950/40 border border-slate-850 p-6 rounded-none text-left relative space-y-3 font-mono">
-            <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
-            <div className="flex items-center gap-2 text-slate-400 text-[10px] font-bold tracking-widest uppercase">
-              <Activity className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-              METRIC BENCHMARK ANALYSIS
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-              <div className="bg-slate-950/80 border border-slate-850/80 p-4 rounded-none">
-                <span className="text-[8px] font-bold text-slate-550 uppercase tracking-widest block">YOUR AVERAGE AI BUDGET</span>
-                <span className="text-xl sm:text-2xl font-black text-white mt-1">${spendPerDeveloper}<span className="text-[10px] font-normal text-slate-500"> / dev / mo</span></span>
-              </div>
-              <div className="bg-slate-950/80 border border-slate-850/80 p-4 rounded-none">
-                <span className="text-[8px] font-bold text-slate-550 uppercase tracking-widest block">PEER AVERAGE ({teamSize <= 5 ? "TINY" : teamSize <= 25 ? "MID-SIZED" : "ENTERPRISE"} COHORT)</span>
-                <span className="text-xl sm:text-2xl font-black text-emerald-400 mt-1">${benchmarkAverage}<span className="text-[10px] font-normal text-slate-500"> / dev / mo</span></span>
-              </div>
-            </div>
-            <p className="text-[10px] text-slate-450 font-sans leading-relaxed pt-1">
-              {spendPerDeveloper > benchmarkAverage ? (
-                <span className="text-amber-400 font-semibold">OVER BUDGET: Your team&apos;s average AI tool spend is higher than similar-sized peer averages by {Math.round((spendPerDeveloper - benchmarkAverage) / benchmarkAverage * 100)}%. Centralizing accounts is highly advised.</span>
-              ) : spendPerDeveloper < benchmarkAverage ? (
-                <span className="text-emerald-400 font-semibold">OPTIMAL BUDGET: Your team&apos;s average AI tool spend is optimized and runs lower than peer averages by {Math.round((benchmarkAverage - spendPerDeveloper) / benchmarkAverage * 100)}%.</span>
-              ) : (
-                <span className="text-emerald-400 font-semibold">OPTIMAL BUDGET: Well aligned! Your team&apos;s average AI tool spend matches the peer cohort average exactly.</span>
-              )}
-            </p>
-          </div>
-
           {/* Dynamic Shareable Link Card */}
           <div className="bg-slate-950/40 border border-slate-805 p-5 rounded-none flex flex-col sm:flex-row gap-4 items-center justify-between text-left font-mono relative">
             <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
@@ -363,7 +335,7 @@ export default async function SharedAuditPage({ params }: PageProps) {
                 <Share2 className="w-3.5 h-3.5 text-emerald-400" />
                 Dynamic shared URL
               </h4>
-              <p className="text-[10px] text-slate-500 font-sans leading-relaxed">
+              <p className="text-[10px] text-slate-550 font-sans leading-relaxed">
                 Share this static dashboard. Personally identifiable information is fully omitted from the output.
               </p>
             </div>
@@ -376,11 +348,9 @@ export default async function SharedAuditPage({ params }: PageProps) {
             </div>
           </div>
 
-
-
           {/* Breakdowns strict list */}
           <div className="space-y-4 font-mono">
-            <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-800 pb-2 text-left">
+            <h3 className="text-[10px] font-bold text-slate-550 uppercase tracking-widest border-b border-slate-800 pb-2 text-left">
               Tool-Specific Analysis Insights
             </h3>
             
@@ -401,7 +371,7 @@ export default async function SharedAuditPage({ params }: PageProps) {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-850/80 pb-3">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-white uppercase tracking-wider">{result.toolName}</span>
-                        <span className="text-[9px] text-slate-500">[{result.currentPlanName}]</span>
+                        <span className="text-[9px] text-slate-550">[{result.currentPlanName}]</span>
                       </div>
 
                       <div className="flex items-center gap-2.5">
@@ -476,6 +446,34 @@ export default async function SharedAuditPage({ params }: PageProps) {
                 );
               })}
             </div>
+          </div>
+
+          {/* BENCHMARK MODE PANEL */}
+          <div className="bg-slate-950/40 border border-slate-850 p-6 rounded-none text-left relative space-y-3 font-mono">
+            <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
+            <div className="flex items-center gap-2 text-slate-400 text-[10px] font-bold tracking-widest uppercase">
+              <Activity className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              METRIC BENCHMARK ANALYSIS
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              <div className="bg-slate-950/80 border border-slate-850/80 p-4 rounded-none">
+                <span className="text-[8px] font-bold text-slate-550 uppercase tracking-widest block">YOUR AVERAGE AI BUDGET</span>
+                <span className="text-xl sm:text-2xl font-black text-white mt-1">${spendPerDeveloper}<span className="text-[10px] font-normal text-slate-500"> / dev / mo</span></span>
+              </div>
+              <div className="bg-slate-950/80 border border-slate-850/80 p-4 rounded-none">
+                <span className="text-[8px] font-bold text-slate-550 uppercase tracking-widest block">PEER AVERAGE ({teamSize <= 5 ? "TINY" : teamSize <= 25 ? "MID-SIZED" : "ENTERPRISE"} COHORT)</span>
+                <span className="text-xl sm:text-2xl font-black text-emerald-400 mt-1">${benchmarkAverage}<span className="text-[10px] font-normal text-slate-500"> / dev / mo</span></span>
+              </div>
+            </div>
+            <p className="text-[10px] text-slate-450 font-sans leading-relaxed pt-1">
+              {spendPerDeveloper > benchmarkAverage ? (
+                <span className="text-amber-400 font-semibold">OVER BUDGET: Your team&apos;s average AI tool spend is higher than similar-sized peer averages by {Math.round((spendPerDeveloper - benchmarkAverage) / benchmarkAverage * 100)}%. Centralizing accounts is highly advised.</span>
+              ) : spendPerDeveloper < benchmarkAverage ? (
+                <span className="text-emerald-400 font-semibold">OPTIMAL BUDGET: Your team&apos;s average AI tool spend is optimized and runs lower than peer averages by {Math.round((benchmarkAverage - spendPerDeveloper) / benchmarkAverage * 100)}%.</span>
+              ) : (
+                <span className="text-emerald-400 font-semibold">OPTIMAL BUDGET: Well aligned! Your team&apos;s average AI tool spend matches the peer cohort average exactly.</span>
+              )}
+            </p>
           </div>
 
           {/* CREDEX CONDITIONAL BANNER OR LOW-SAVINGS HONESTY BANNER */}

@@ -12,6 +12,10 @@ export function generateFallbackSummary(
 
   let summary = '';
 
+  const economicSafeguards = result.results.filter(
+    (r: any) => r.savings === 0 && r.currentPlanName.toLowerCase() === 'enterprise' && r.currentSpend > 0
+  );
+
   if (savings === 0) {
     if (hasCompliance) {
       const details = [];
@@ -38,5 +42,11 @@ export function generateFallbackSummary(
     }
   }
 
+  if (economicSafeguards.length > 0) {
+    const names = economicSafeguards.map((r: any) => r.toolName).join(', ');
+    summary += ` Additionally, our economic safeguard rules identified that your custom ${names} contract is highly optimized; standard retail downgrades were bypassed since they would actually increase your monthly expenses.`;
+  }
+
   return summary;
 }
+
