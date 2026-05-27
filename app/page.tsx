@@ -1313,68 +1313,44 @@ function HomeContent() {
                 </p>
               </div>
 
-              {/* CREDEX CONDITIONAL BANNER OR LOW-SAVINGS HONESTY BANNER */}
-              {auditResult.monthlySavings > 300 ? (
-                <div className="bg-emerald-950/5 border border-emerald-500/30 rounded-none p-6 flex flex-col sm:flex-row gap-5 items-center justify-between text-left font-mono relative">
-                  <div className="absolute top-0 left-0 w-2 h-[1px] bg-emerald-500" />
-                  <div className="flex gap-3.5 items-start">
-                    <div className="p-2.5 bg-emerald-500/10 rounded-none border border-emerald-500/30 text-emerald-400 shrink-0 select-none">
-                      <Coins className="w-4 h-4" />
-                    </div>
-                    <div className="space-y-1">
-                      <h4 className="text-xs font-bold text-white uppercase tracking-widest font-mono">You may qualify for discounted enterprise AI credits.</h4>
-                      <p className="text-[10px] text-slate-450 font-sans leading-relaxed">
-                        Teams with similar usage patterns reduced spend further through Credex marketplace pricing.
-                      </p>
-                    </div>
+              {/* JOIN WAITLIST BANNER */}
+              <div className="p-6 bg-slate-950/40 border border-slate-850 rounded-none text-left space-y-4 font-mono relative">
+                <div className="absolute top-0 left-0 w-2 h-[1px] bg-slate-550" />
+                <div className="flex gap-3.5 items-start">
+                  <div className="p-2.5 bg-slate-900 rounded-none border border-slate-800 text-slate-400 shrink-0 select-none">
+                    <CheckCircle2 className="w-4 h-4" />
                   </div>
-                  <button 
-                    onClick={() => setIsConsultModalOpen(true)}
-                    type="button"
-                    className="bg-emerald-500 hover:bg-emerald-600 text-[#020617] border border-emerald-400 font-mono font-bold uppercase tracking-wider text-[10px] px-5 py-2.5 rounded-none shadow-md shrink-0 transition-all cursor-pointer whitespace-nowrap animate-pulse"
-                  >
-                    Book Free Consultation
-                  </button>
-                </div>
-              ) : (
-                <div className="p-6 bg-slate-950/40 border border-slate-850 rounded-none text-left space-y-4 font-mono relative">
-                  <div className="absolute top-0 left-0 w-2 h-[1px] bg-slate-550" />
-                  <div className="flex gap-3.5 items-start">
-                    <div className="p-2.5 bg-slate-900 rounded-none border border-slate-800 text-slate-400 shrink-0 select-none">
-                      <CheckCircle2 className="w-4 h-4" />
-                    </div>
-                    <div className="space-y-1">
-                      <h4 className="text-xs font-bold text-white uppercase tracking-widest font-mono">JOIN WAITLIST</h4>
-                      <p className="text-[10px] text-slate-450 font-sans leading-relaxed">
-                        Join the waitlist to get notified when new optimization opportunities become available.
-                      </p>
-                    </div>
+                  <div className="space-y-1">
+                    <h4 className="text-xs font-bold text-white uppercase tracking-widest font-mono">JOIN WAITLIST</h4>
+                    <p className="text-[10px] text-slate-450 font-sans leading-relaxed">
+                      Join the waitlist to get notified when new optimization opportunities become available.
+                    </p>
                   </div>
-                  
-                  {waitlistSubmitted ? (
-                    <div className="text-[10px] text-emerald-400 font-mono px-3 py-1.5 bg-emerald-500/5 border border-emerald-500/20 max-w-sm">
-                      [ WAITLIST_LOGGED ]: Thank you! We will notify you of fresh API rate plans or licenses.
-                    </div>
-                  ) : (
-                    <form onSubmit={handleWaitlistSubmit} className="flex flex-col sm:flex-row gap-2 max-w-md pt-1">
-                      <input
-                        type="email"
-                        required
-                        placeholder="Enter email for optimization alerts"
-                        value={waitlistEmail}
-                        onChange={(e) => setWaitlistEmail(e.target.value)}
-                        className="bg-slate-950 border border-slate-800 focus:border-slate-500 rounded-none px-3 py-1.5 text-[10px] text-white outline-none font-mono flex-grow"
-                      />
-                      <button
-                        type="submit"
-                        className="bg-slate-900 hover:bg-slate-850 text-white border border-slate-700 font-mono font-bold uppercase tracking-wider text-[9px] px-4 py-2 rounded-none transition-all cursor-pointer shrink-0"
-                      >
-                        Join Waitlist
-                      </button>
-                    </form>
-                  )}
                 </div>
-              )}
+                
+                {waitlistSubmitted ? (
+                  <div className="text-[10px] text-emerald-400 font-mono px-3 py-1.5 bg-emerald-500/5 border border-emerald-500/20 max-w-sm">
+                    [ WAITLIST_LOGGED ]: Thank you! We will notify you of fresh API rate plans or licenses.
+                  </div>
+                ) : (
+                  <form onSubmit={handleWaitlistSubmit} className="flex flex-col sm:flex-row gap-2 max-w-md pt-1">
+                    <input
+                      type="email"
+                      required
+                      placeholder="Enter email for optimization alerts"
+                      value={waitlistEmail}
+                      onChange={(e) => setWaitlistEmail(e.target.value)}
+                      className="bg-slate-950 border border-slate-800 focus:border-slate-500 rounded-none px-3 py-1.5 text-[10px] text-white outline-none font-mono flex-grow"
+                    />
+                    <button
+                      type="submit"
+                      className="bg-slate-900 hover:bg-slate-850 text-white border border-slate-700 font-mono font-bold uppercase tracking-wider text-[9px] px-4 py-2 rounded-none transition-all cursor-pointer shrink-0"
+                    >
+                      Join Waitlist
+                    </button>
+                  </form>
+                )}
+              </div>
 
               {/* Dynamic Shareable Link Card */}
               {savedSlug && (
