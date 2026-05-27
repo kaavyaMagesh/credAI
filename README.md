@@ -1,13 +1,42 @@
 # CredAI — AI Spend Audit Tool
 
-CredAI is an AI Spend Audit Tool that tells any startup engineering team exactly where
-they are overspending on AI tools — Cursor, Copilot, Claude, ChatGPT, and others
-— with specific plan-level recommendations and real savings numbers, in under
-3 minutes, no login required. It is built for the senior engineer or tech lead
-who has been asked to justify their team's AI tooling spend but has no benchmark
-to work from. For teams where the audit surfaces significant savings, it connects
-them to Credex — a service that sources discounted AI credits from companies that
-overforecast — as the next step to actually capture those savings.
+CredAI is an AI Spend Audit Tool that tells any startup engineering team exactly where they are overspending on AI tools (Cursor, Copilot, Claude, ChatGPT, and others) with specific plan-level recommendations and real savings numbers, in under 3 minutes, no login required. It is built for the senior engineer or tech lead who has been asked to justify their team's AI tooling spend but has no benchmark to work from. For teams where the audit surfaces significant savings, it connects them to Credex — a service that sources discounted AI credits from companies that overforecast — as the next step to actually capture those savings.
+
+---
+
+## 🎥 30-Second Demo & Screen Recording
+
+Watch the 30-second screen recording of the application in action:
+[Watch on YouTube](https://youtu.be/foz7b9xrZwE)
+
+---
+
+## 🚀 Quick Start: Install, Run Locally & Deploy
+
+Ensure Node.js is installed on your local environment before running.
+
+```bash
+# Install dependencies
+npm install
+
+# Set Up Environment Variables
+copy .env.example .env.local
+
+# Run the development server
+npm run dev
+
+# Run Vitest test suite
+npm test
+
+# Install Vercel CLI (once)
+npm i -g vercel
+
+# Deploy (first time — prompts for project setup)
+vercel
+
+# Deploy to production
+vercel --prod
+```
 
 ---
 
@@ -35,33 +64,9 @@ During the sprint build, we made five critical technical trade-offs to balance r
 *   **The Decision:** We declared isolated frontend-specific type interfaces inside `app/page.tsx` and client files instead of sharing and importing them directly from the server-side calculations module `lib/audit/engine.ts`.
 *   **The Rationale:** Direct server imports in Client Components caused Next.js's bundler to attempt compiling server-side Node.js built-ins (`fs` and `path`) for the browser environment, throwing fatal Webpack reference compilation errors. By declaring isolated, decoupled type interfaces for the client view model, we eliminated Webpack browser bundling conflicts, keeping the client bundle compile-safe, lightweight, and completely decoupled from backend modules.
 
-### Live Deployed URL : https://cred-ai-ten.vercel.app/
 ---
 
-## Setup & Running Locally
+## 🌐 Live Deployed Production URL
 
-Ensure Node.js is installed on your local environment before running.
-
-```bash
-# Install dependencies
-npm install
-
-#Set Up Environment Variables
-copy .env.example .env.local
-
-# Run the development server
-npm run dev
-
-# Run Vitest test suite
-npm test
-
-# Install Vercel CLI (once)
-npm i -g vercel
-
-# Deploy (first time — prompts for project setup)
-vercel
-
-# Deploy to production
-vercel --prod
-
-```
+Access the live deployed production version of the application:
+[CredAI Live Production URL](https://cred-ai-ten.vercel.app/)
